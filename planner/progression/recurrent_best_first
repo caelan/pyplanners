@@ -1,0 +1,5 @@
+# Simultaneous BFS and Best First Search with some amount of switching between them (doesn’t really encapsulate what makes Best First Search good though)
+# When the best first fails to find a node with a better cost, expand every node again until it does. Or hill climb from best options so far
+# Flush the queue by processing states in order of cost and when ensure that a state spawned with an equal cost is place in the next round of processing. Iterate on this
+# Do the layers of heuristic costs thing to expand incrementally
+#
