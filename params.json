@@ -1,5 +1,5 @@
 {
-  "name": "Py-planners",
+  "name": "PyPlanners",
   "tagline": "AI planners written in Python",
   "body": "# pyplanners\r\nContains STRIPS and SAS+ problem represesentations and forward search planners.\r\n\r\nAlso, contains the Hybird Backward-Forward (HBF) algorithm applied to discrete problems. \r\nhttp://web.mit.edu/caelan/www/research/hbf/\r\n\r\nAdditional documentation and support will be added in the future.\r\n",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
