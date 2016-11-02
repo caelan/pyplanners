@@ -1,4 +1,4 @@
-# py-planners
+# pyplanners
 Contains STRIPS and SAS+ problem represesentations and forward search planners.
 
 Also, contains the Hybird Backward-Forward (HBF) algorithm applied to discrete problems. 
