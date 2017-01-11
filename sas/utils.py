@@ -65,6 +65,67 @@ default_generator = lambda i, g, o: single_generator(i, g, o, default_successors
 
 ###########################################################################
 
+from downward import *
+from collections import OrderedDict
+
+class Problem(object):
+  def __init__(self, initial, goal, actions, axioms):
+    self.var_indices = {}
+    self.var_order = []
+    self.var_val_indices = {}
+    self.var_val_order = {}
+    self.actions = []
+    self.mutexes = []
+    self.costs = True
+
+    for var, val in initial.values.iteritems():
+      self.add_val(var, val)
+    for var, val in goal.conditions.iteritems():
+      self.add_val(var, val)
+    for action in actions:
+      self.add_action(action)
+
+    for var in self.var_order:
+      print var
+      print self.var_val_order[var]
+      print
+
+  def add_var(self, var):
+    if var not in self.var_indices:
+      self.var_indices[var] = len(self.var_order)
+      self.var_order.append(var)
+      self.var_val_indices[var] = {}
+      self.var_val_order[var] = []
+
+  def add_val(self, var, val):
+    self.add_var(var)
+    if val not in self.var_val_indices[var]:
+      self.var_val_indices[var][val] = len(self.var_val_order[var])
+      self.var_val_order[var].append(val)
+
+  def add_action(self, action):
+    self.actions.append(action)
+    for var, val in action.conditions.iteritems():
+      self.add_val(var, val)
+    for var, val in action.effects.iteritems():
+      self.add_val(var, val)
+
+  def get_var(self, var):
+    return self.var_indices[var]
+
+
+def downward_plan(initial, goal, operators):
+  print initial
+  print
+  #print goal
+  #print operators
+
+  problem = Problem(initial, goal, operators, [])
+
+  return None, None
+
+###########################################################################
+
 #default_search = default_plan
 #default_search = lambda initial, goal, generator: bfs(initial, goal, generator, INF, INF, INF, INF, INF, None)
 #default_search = lambda initial, goal, generator: a_star_search(initial, goal, generator,
@@ -85,3 +146,5 @@ def default_plan(initial, goal, operators):
 
 def default_derived_plan(initial, goal, operators, axioms):
   return default_search(initial, goal, (lambda v: iter([default_successors(v.state, goal, operators + axioms)]), axioms))
+
+default_plan = downward_plan
