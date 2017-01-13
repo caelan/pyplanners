@@ -18,7 +18,8 @@ def solve(problem, print_profile):
   def execute():
     start_time = time()
     try:
-      output = default_plan(initial, goal, randomize(operators))
+      #output = default_plan(initial, goal, randomize(operators))
+      output = downward_plan(initial, goal, randomize(operators))
       #output = fixed_search(initial, goal, operators, default_plan, pp_hierarchy_level)
       #output = pop_solve(initial, goal, randomize(operators), max_length=2)
       #output = relaxed_pop(initial, goal, operators)
