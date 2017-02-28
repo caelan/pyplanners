@@ -45,12 +45,6 @@ def run_script(*args):
     return False
   return True
 
-def record_screen(filename, delay=10):
- return run_script('osascript', 'misc/record_screen.scpt', filename, str(delay))
-
-def launch_quicktime():
- return run_script('osascript', 'misc/launch_quicktime.scpt')
-
 def read(filename):
   with open(filename, 'r') as f:
     return f.read()

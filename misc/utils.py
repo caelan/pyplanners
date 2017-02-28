@@ -1,5 +1,4 @@
 from inspect import currentframe, getargvalues, getargspec, getfile
-from caches import *
 from numerical import *
 from functions import *
 from io import *

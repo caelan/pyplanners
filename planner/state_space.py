@@ -125,9 +125,11 @@ class StateSpace(object):
     if vertex.cost + operator.cost <= self.max_cost and vertex.length + len(operator) <= self.max_length:
       #if vertex.state in operator:
       if vertex.contained(operator):
-        #sink_state = operator(vertex.state)[-1] if isinstance(operator, MacroOperator) else operator(vertex.state)
-        assert not isinstance(operator, MacroOperator)
-        sink_state = operator.apply(vertex.state) # NOTE - this won't work for MacroOperators yet
+        if self.axioms:
+          assert not isinstance(operator, MacroOperator)
+          sink_state = operator.apply(vertex.state) # TODO - this won't work for MacroOperators yet?
+        else:
+          sink_state = operator(vertex.state)[-1] if isinstance(operator, MacroOperator) else operator(vertex.state)
         if sink_state is not None and self[sink_state].extensions < self.max_extensions:
           sink_vertex = self[sink_state]
           self.edges.append(Edge(vertex, sink_vertex, operator))
