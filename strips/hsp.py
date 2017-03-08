@@ -28,6 +28,10 @@ def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):
         if len(operator.conditions) == 0:
           operator_cost, operator_level = 0, 0
         else:
+          print
+          print unprocessed.keys()
+          print state
+          print literal_costs.keys()
           operator_cost = op(literal_costs[literal].cost for literal in operator.conditions)
           operator_level = max(literal_costs[literal].level for literal in operator.conditions)
         operator_costs[operator] = Pair(operator_cost, operator_level)
