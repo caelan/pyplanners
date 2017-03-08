@@ -1,4 +1,4 @@
-from misc.utils import *
+from misc.utils import str_object
 
 class Literal(object):
   def __init__(self, *args):
