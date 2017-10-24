@@ -75,14 +75,13 @@ class Problem(object):
     self.var_order = []
     self.var_val_indices = {}
     self.var_val_order = {}
-    self.axioms = []
+    self.axioms = axioms
     self.mutexes = []
     self.costs = True
 
     self.initial = initial
     for var, val in initial.values.iteritems():
       self.add_val(var, val)
-
     self.goal = goal
     for var, val in goal.conditions.iteritems():
       self.add_val(var, val)
@@ -94,6 +93,7 @@ class Problem(object):
       for var, val in action.effects.iteritems():
         self.add_val(var, val)
 
+  def print_problem(self):
     print self.initial.values.keys()
     print len(self.initial.values)
     print len(self.var_order)

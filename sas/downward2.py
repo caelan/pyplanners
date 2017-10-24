@@ -97,17 +97,19 @@ import os
 from os.path import expanduser
 from time import time
 
-FD_ROOT = expanduser('~/Programs/LIS/planners/FD/')
-FD_PATH = os.path.join(FD_ROOT, 'builds/release32/bin/')
+#FD_ROOT = expanduser('~/Programs/LIS/planners/FD/')
+#FD_PATH = os.path.join(FD_ROOT, 'builds/release32/bin/')
+FD_PATH= os.environ['FD_PATH']
 
 SAS_PATH = 'output.sas'
 OUTPUT_PATH = 'sas_plan'
 
-SEARCH_OPTIONS = '--heuristic "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=plusone),cost_type=plusone)" ' \
-                 '--search "lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1,max_time=%s,bound=%s)"'
+#SEARCH_OPTIONS = '--heuristic "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=plusone),cost_type=plusone)" ' \
+#                 '--search "lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1,max_time=%s,bound=%s)"'
+SEARCH_OPTIONS = '--heuristic "h=ff(transform=adapt_costs(cost_type=PLUSONE))" ' \
+                 '--search "astar(h,max_time=%s,bound=%s)"'
 
-PREPROCESS_COMMAND = FD_PATH + 'preprocess < %s'%SAS_PATH
-SEARCH_COMMAND = FD_PATH + 'downward %s < output'%SEARCH_OPTIONS #+ ' --search-time-limit %s'%10 # TODO - limit
+SEARCH_COMMAND = FD_PATH + 'bin/downward %s < %s'%(SEARCH_OPTIONS, SAS_PATH) #+ ' --search-time-limit %s'%10 # TODO - limit
 
 def write_sas(problem):
   s = write_version() + \
@@ -121,12 +123,15 @@ def write_sas(problem):
   write(SAS_PATH, s)
 
 def fast_downward(debug=False, max_time=30, max_cost='infinity'):
-  for command in [PREPROCESS_COMMAND, SEARCH_COMMAND%(max_time, max_cost)]:
-    t0 = time()
-    p = os.popen(command)
-    output = p.read()
-    print command, time() - t0
-    if debug: print output
+  if os.path.exists(OUTPUT_PATH):
+    os.remove(OUTPUT_PATH)
+  command = SEARCH_COMMAND%(max_time, max_cost)
+  t0 = time()
+  p = os.popen(command)
+  output = p.read()
+  print command, time() - t0
+  if debug:
+    print output
   if not os.path.exists(OUTPUT_PATH):
     return None
   return read(OUTPUT_PATH)
