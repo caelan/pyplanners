@@ -1,4 +1,5 @@
-from hsp import *
+from .hsp import *
+from misc.functions import argmin, flatten
 
 def get_layers(costs):
   num_layers = max(pair.level for pair in costs.values()) + 1

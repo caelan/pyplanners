@@ -1,5 +1,5 @@
-from states import State
-from misc.utils import str_object
+from .states import State
+from misc.objects import str_object
 
 class Operator(object):
   def __init__(self, args):

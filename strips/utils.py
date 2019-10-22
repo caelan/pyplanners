@@ -1,4 +1,7 @@
-from ff import *
+from .ff import ff_fn, plan_cost, first_goals
+from misc.numerical import INF
+from misc.functions import in_add
+from planner.progression.best_first import a_star_search, best_first_search, deferred_best_first_search
 
 def h_0(state, goal, operators): return 0
 def h_naive(state, goal, operators): return sum(1 for literal in goal.conditions if literal not in state)
@@ -51,8 +54,6 @@ def filter_axioms_generator(goal, operators, axioms, successors):
 default_generator = lambda i, g, o: single_generator(i, g, o, default_successors)
 
 ###########################################################################
-
-from planner.progression import a_star_search, best_first_search, deferred_best_first_search
 
 #default_search = lambda initial, goal, generator: a_star_search(initial, goal, generator,
 #        lambda v: v.cost + v.h_cost, True, INF, INF, INF, INF, INF, None)

@@ -1,8 +1,15 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
 import sys
 import getopt
 
+from time import time
 from misc.profiling import *
+from misc.functions import randomize
 from planner.main import *
+from misc.utils import SEPARATOR
 from strips.utils import default_plan
 import strips.domains as domains
 
@@ -13,7 +20,7 @@ def solve(problem, print_profile):
 
   #dt = datetime.datetime.now()
   #directory = DIRECTORY + '{}/{}/{}/'.format(problem.__name__, dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
-  print SEPARATOR + '\nSolving strips problem ' + problem.__name__
+  print(SEPARATOR + '\nSolving strips problem ' + problem.__name__)
 
   def execute():
     start_time = time()
@@ -27,17 +34,17 @@ def solve(problem, print_profile):
 
   (plan, state_space), profile_output = run_profile(execute)
   #print 'Wrote', directory+'profile'
-  print SEPARATOR
+  print(SEPARATOR)
 
   data = (str(plan) if plan is not None else 'Infeasible') + '\n\n' + str(state_space)
-  print data
+  print(data)
   #write(directory + 'planner_statistics', data)
   #print 'Wrote', directory+'planner_statistics'
 
   if print_profile:
-    print SEPARATOR
-    print profile_output
-  print SEPARATOR
+    print(SEPARATOR)
+    print(profile_output)
+  print(SEPARATOR)
 
 ###########################################################################
 
@@ -48,14 +55,14 @@ def main(argv):
     opts, args = getopt.getopt(argv, 'hp:q',
       ['help', 'problem=', 'profile'])
   except getopt.GetoptError:
-    print HELP_MESSAGE
+    print(HELP_MESSAGE)
     return
 
   problem = None
   profile = False
   for opt, arg in opts:
     if opt in ('-h', '--help'):
-      print HELP_MESSAGE
+      print(HELP_MESSAGE)
       return
     elif opt in ('-p', '--problem'):
       problem = arg
@@ -63,12 +70,12 @@ def main(argv):
       profile = True
 
   if problem is None:
-    print HELP_MESSAGE
+    print(HELP_MESSAGE)
     return
   if hasattr(domains, problem):
     problem = getattr(domains, problem)
   else:
-    print problem, 'is not a valid problem'
+    print(problem, 'is not a valid problem')
     return
   solve(problem, profile)
 

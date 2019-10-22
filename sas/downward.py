@@ -112,6 +112,3 @@ PATH = 'output.sas'
 
 def write_file(problem):
   write(PATH, problem)
-
-
-

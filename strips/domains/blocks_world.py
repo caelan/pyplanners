@@ -1,4 +1,8 @@
-from ..operators import *
+from strips.operators import Action
+from strips.states import State, PartialState, Literal
+from misc.utils import arg_info, currentframe
+from misc.functions import pairs
+from itertools import permutations
 
 class Clear(Literal): pass
 class OnTable(Literal): pass

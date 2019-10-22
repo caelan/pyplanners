@@ -1,4 +1,5 @@
-from misc.utils import *
+from collections import defaultdict, namedtuple
+from heapq import heappush, heappop
 
 Pair = namedtuple('Node', ['cost', 'level'])
 
@@ -17,7 +18,7 @@ def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):
   literal_costs = {literal: Pair(0, 0) for literal in unprocessed if literal is not None and literal in state}
   literal_costs[None] = Pair(0, 0)
   operator_costs = {}
-  queue = [(pair.cost, literal) for literal, pair in literal_costs.iteritems()]
+  queue = [(pair.cost, literal) for literal, pair in literal_costs.items()]
   while len(queue) != 0:
     _, literal = heappop(queue)
     if literal not in unprocessed: continue

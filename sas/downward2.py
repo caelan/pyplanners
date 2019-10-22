@@ -99,7 +99,7 @@ from time import time
 
 #FD_ROOT = expanduser('~/Programs/LIS/planners/FD/')
 #FD_PATH = os.path.join(FD_ROOT, 'builds/release32/bin/')
-FD_PATH= os.environ['FD_PATH']
+FD_PATH = os.environ.get('FD_PATH', '')
 
 SAS_PATH = 'output.sas'
 OUTPUT_PATH = 'sas_plan'
@@ -150,4 +150,3 @@ def solve_sas(problem):
   if plan is None:
     return None
   return convert_solution(plan, problem)
-

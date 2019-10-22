@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+#from __future__ import print_function
+
 from misc.profiling import *
 from sas.utils import *
 from sas.pop import pop_solve

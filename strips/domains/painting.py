@@ -1,4 +1,5 @@
-
+from strips.operators import Action
+from itertools import combinations
 
 class SprayPaint(Action):
   actionName = 'SprayPaint'

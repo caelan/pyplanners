@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+
 from misc.utils import *
 from misc.profiling import *
 from planner.main import default_plan, default_scheduler_generator
 import discrete.problems as problems
 import sys
 import getopt
+import datetime
 
 def solve(problem_name, print_profile=False):
   dt = datetime.datetime.now()
