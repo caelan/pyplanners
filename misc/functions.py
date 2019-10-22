@@ -3,6 +3,10 @@ from itertools import cycle, islice, permutations, chain, product, count
 from collections import Iterable
 from .numerical import INF
 import operator
+import time
+
+def elapsed_time(start_time):
+  return time.time() - start_time
 
 def irange(start, stop=None, step=1): #np.arange
   if stop is None:

@@ -61,12 +61,21 @@ default_generator = lambda i, g, o: single_generator(i, g, o, default_successors
 
 ###########################################################################
 
-#default_search = lambda initial, goal, generator: a_star_search(initial, goal, generator,
-#                lambda v: v.cost + v.h_cost, True, INF, INF, INF, INF, INF, None)
-default_search = lambda initial, goal, generator: best_first_search(initial, goal, generator,
-                lambda v: v.h_cost, False, INF, INF, INF, INF, INF, None) # True vs False can matter quite a bit
-#default_search = lambda initial, goal, generator: deferred_best_first_search(initial, goal, generator,
-#                lambda v: v.h_cost, False, INF, INF, INF, INF, INF, None) # True vs False can matter quite a bit
+def weighted(w):
+    if w == INF:
+        return lambda v: v.h_cost
+    return lambda v: (v.cost + w*v.h_cost)
+
+uniform = weighted(0)
+astar = weighted(1)
+greedy = weighted(INF)
+
+###########################################################################
+
+# TODO: # stack=True vs False can matter quite a bit
+#default_search = lambda initial, goal, generator: a_star_search(initial, goal, generator, astar, stack=True)
+default_search = lambda initial, goal, generator: best_first_search(initial, goal, generator, greedy, stack=False)
+#default_search = lambda initial, goal, generator: deferred_best_first_search(initial, goal, generator, greedy, stack=False)
 
 def default_plan(initial, goal, operators):
     return default_search(initial, goal, default_generator(initial, goal, operators))

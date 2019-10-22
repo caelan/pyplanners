@@ -1,4 +1,6 @@
 from .operators import *
+from misc.functions import elapsed_time
+import time
 
 # TODO - can rewire state-space if found a better parent
 
@@ -95,7 +97,7 @@ class Edge(object):
 
 class StateSpace(object):
   def __init__(self, generator_fn, start, max_extensions, max_generations, max_cost, max_length):
-    self.start_time = time()
+    self.start_time = time.time()
     self.iterations = 0
     self.vertices = {}
     self.edges = [] # NOTE - allowing parallel-edges
@@ -147,7 +149,7 @@ class StateSpace(object):
     if sequence is None: return None
     return Plan(self.root.state, sequence)
   def time_elapsed(self):
-    return time() - self.start_time
+    return elapsed_time(self.start_time)
   def num_expanded(self):
     return sum(1 for v in self if v.generations > 0) # NOTE - can be very expensive for a large state space
   def num_generations(self):

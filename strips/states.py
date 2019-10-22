@@ -4,22 +4,24 @@ class Literal(object):
     def __init__(self, *args):
         self.args = tuple(args)
         self.sign = True
+    @property
+    def negated(self):
+        return not self.sign
     def copy(self):
         new = self.__class__(*self.args)
         new.sign = self.sign
         return new
-    def __abs__(self):
+    def positive(self):
         new = self.copy()
         new.sign = True
         return new
-    def __neg__(self):
-        new = self.copy()
-        new.sign = False
-        return new
-    def __invert__(self):
+    __abs__ = positive # abs(literal)
+    def negate(self):
         new = self.copy()
         new.sign = not self.sign
         return new
+    __neg__ = negate # -literal
+    __invert__ = negate # ~literal
     def __eq__(self, other):
         return (type(self) == type(other)) and (self.sign == other.sign) and (self.args == other.args)
     def __ne__(self, other):
@@ -34,10 +36,11 @@ class Literal(object):
 class State(object):
     def __init__(self, atoms):
         self.atoms = frozenset(atoms)
-    def __contains__(self, literal):
-        return literal.sign == (abs(literal) in self.atoms)
+    def holds(self, literal):
+        return literal.sign == (literal.positive() in self.atoms)
+    __contains__ = holds
     def __eq__(self, other):
-        return type(self) == type(other) and self.atoms == other.atoms
+        return (type(self) == type(other)) and (self.atoms == other.atoms)
     def __ne__(self, other):
         return not (self == other)
     def __hash__(self):
@@ -49,8 +52,9 @@ class State(object):
 class PartialState(object):
     def __init__(self, literals):
         self.conditions = frozenset(literals)
-    def __contains__(self, state):
+    def contains(self, state):
         return all(literal in state for literal in self.conditions)
+    __contains__ = contains
     def __eq__(self, other):
         return (type(self) == type(other)) and (self.conditions == other.conditions)
     def __ne__(self, other):

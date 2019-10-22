@@ -8,15 +8,18 @@ class Operator(object):
         self.args = args # TODO - use FrozenDict instead
         self._frozen_args = frozenset(args.items())
         self._hash = None
+        self.conditions = None
+        self.effects = None
         self.test = lambda state: True
-    def __contains__(self, state):
+    def applicable(self, state):
         return all(literal in state for literal in self.conditions) and self.test(state)
+    __contains__ = applicable
     def apply(self, state):
         # TODO: cancelation semantics
-        return State({atom for atom in state.atoms if ~atom not in self.effects} |
-                {literal for literal in self.effects if literal.sign})
+        return State({atom for atom in state.atoms if atom.negate() not in self.effects} |
+                     {literal for literal in self.effects if not literal.negated})
     def __call__(self, state):
-        return self.apply(state) if state in self else None
+        return self.apply(state) if self.applicable(state) else None
     def is_axiom(self):
         return isinstance(self, Axiom)
     def __iter__(self):

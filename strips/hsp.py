@@ -4,7 +4,7 @@ from heapq import heappush, heappop
 Pair = namedtuple('Node', ['cost', 'level'])
 
 def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):
-    unprocessed = defaultdict(list) # TODO - store this in memory
+    unprocessed = defaultdict(list) # TODO: store this in memory
     unsatisfied = {}
     for operator in operators + [goal]:
         if len(operator.conditions) == 0:
@@ -15,31 +15,34 @@ def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):
             for literal in operator.conditions:
                 unprocessed[literal].append(operator)
 
-    literal_costs = {literal: Pair(0, 0) for literal in unprocessed if literal is not None and literal in state}
+    literal_costs = {literal: Pair(0, 0) for literal in unprocessed
+                     if (literal is not None) and (literal in state)}
     literal_costs[None] = Pair(0, 0)
     operator_costs = {}
     queue = [(pair.cost, literal) for literal, pair in literal_costs.items()]
-    while len(queue) != 0:
+    while queue:
         _, literal = heappop(queue)
-        if literal not in unprocessed: continue
-
+        if literal not in unprocessed:
+            continue
         for operator in unprocessed[literal]:
             unsatisfied[operator] -= 1
             if unsatisfied[operator] == 0:
                 if len(operator.conditions) == 0:
-                    operator_cost, operator_level = 0, 0
+                    operator_cost = operator_level = 0
                 else:
                     operator_cost = op(literal_costs[literal].cost for literal in operator.conditions)
                     operator_level = max(literal_costs[literal].level for literal in operator.conditions)
                 operator_costs[operator] = Pair(operator_cost, operator_level)
                 if operator == goal:
-                    if greedy: return literal_costs, operator_costs
+                    if greedy:
+                        return literal_costs, operator_costs
                     continue
                 literal_cost = operator_cost + (operator.cost if not unit else 1)
                 literal_level = operator_level + 1
                 #literal_level = operator_level + (1 if not operator.is_axiom() else 0)
                 for effect in operator.effects:
-                    if effect in unprocessed and (effect not in literal_costs or literal_cost < literal_costs[effect].cost): # Only computes costs for relevant operators
+                    # Only computes costs for relevant operators
+                    if (effect in unprocessed) and (effect not in literal_costs or (literal_cost < literal_costs[effect].cost)):
                         literal_costs[effect] = Pair(literal_cost, literal_level)
                         heappush(queue, (literal_cost, effect))
         del unprocessed[literal]
