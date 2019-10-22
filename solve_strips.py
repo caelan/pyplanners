@@ -16,68 +16,68 @@ import strips.domains as domains
 DIRECTORY = './simulations/strips/planning/'
 
 def solve(problem, print_profile):
-  initial, goal, operators = problem()
+    initial, goal, operators = problem()
 
-  #dt = datetime.datetime.now()
-  #directory = DIRECTORY + '{}/{}/{}/'.format(problem.__name__, dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
-  print(SEPARATOR + '\nSolving strips problem ' + problem.__name__)
+    #dt = datetime.datetime.now()
+    #directory = DIRECTORY + '{}/{}/{}/'.format(problem.__name__, dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
+    print(SEPARATOR + '\nSolving strips problem ' + problem.__name__)
 
-  def execute():
-    start_time = time()
-    try:
-      output = default_plan(initial, goal, randomize(operators))
-    except KeyboardInterrupt:
-      output = None, time() - start_time
-    #make_dir(directory)
-    #print 'Created directory:', directory
-    return output
+    def execute():
+        start_time = time()
+        try:
+            output = default_plan(initial, goal, randomize(operators))
+        except KeyboardInterrupt:
+            output = None, time() - start_time
+        #make_dir(directory)
+        #print 'Created directory:', directory
+        return output
 
-  (plan, state_space), profile_output = run_profile(execute)
-  #print 'Wrote', directory+'profile'
-  print(SEPARATOR)
-
-  data = (str(plan) if plan is not None else 'Infeasible') + '\n\n' + str(state_space)
-  print(data)
-  #write(directory + 'planner_statistics', data)
-  #print 'Wrote', directory+'planner_statistics'
-
-  if print_profile:
+    (plan, state_space), profile_output = run_profile(execute)
+    #print 'Wrote', directory+'profile'
     print(SEPARATOR)
-    print(profile_output)
-  print(SEPARATOR)
+
+    data = (str(plan) if plan is not None else 'Infeasible') + '\n\n' + str(state_space)
+    print(data)
+    #write(directory + 'planner_statistics', data)
+    #print 'Wrote', directory+'planner_statistics'
+
+    if print_profile:
+        print(SEPARATOR)
+        print(profile_output)
+    print(SEPARATOR)
 
 ###########################################################################
 
 HELP_MESSAGE = 'python %s -p <problem>'%(__file__)
 
 def main(argv):
-  try:
-    opts, args = getopt.getopt(argv, 'hp:q',
-      ['help', 'problem=', 'profile'])
-  except getopt.GetoptError:
-    print(HELP_MESSAGE)
-    return
+    try:
+        opts, args = getopt.getopt(argv, 'hp:q',
+            ['help', 'problem=', 'profile'])
+    except getopt.GetoptError:
+        print(HELP_MESSAGE)
+        return
 
-  problem = None
-  profile = False
-  for opt, arg in opts:
-    if opt in ('-h', '--help'):
-      print(HELP_MESSAGE)
-      return
-    elif opt in ('-p', '--problem'):
-      problem = arg
-    elif opt in ('-q', '--profile'):
-      profile = True
+    problem = None
+    profile = False
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            print(HELP_MESSAGE)
+            return
+        elif opt in ('-p', '--problem'):
+            problem = arg
+        elif opt in ('-q', '--profile'):
+            profile = True
 
-  if problem is None:
-    print(HELP_MESSAGE)
-    return
-  if hasattr(domains, problem):
-    problem = getattr(domains, problem)
-  else:
-    print(problem, 'is not a valid problem')
-    return
-  solve(problem, profile)
+    if problem is None:
+        print(HELP_MESSAGE)
+        return
+    if hasattr(domains, problem):
+        problem = getattr(domains, problem)
+    else:
+        print(problem, 'is not a valid problem')
+        return
+    solve(problem, profile)
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+    main(sys.argv[1:])
