@@ -1,7 +1,7 @@
-from states import *
+from .states import *
 from misc.utils import *
-from effects import ValueEffect
-from conditions import SubstateCondition
+from .effects import ValueEffect
+from .conditions import SubstateCondition
 
 class Operator(object):
   def __init__(self, args):

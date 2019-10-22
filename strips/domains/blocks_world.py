@@ -34,6 +34,8 @@ class Unstack(Action):
         self.conditions = {Clear(obj), ArmEmpty(), On(obj, under_obj)}
         self.effects = {Holding(obj), Clear(under_obj), ~Clear(obj), ~ArmEmpty(), ~On(obj, under_obj)}
 
+###########################################################################
+
 def line_stack_blocks(n=10, height=5):
     height = max(height, 0)
     n = max(height, n)

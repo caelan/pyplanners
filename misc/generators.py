@@ -1,6 +1,6 @@
 from collections import Iterator
 from itertools import islice
-from numerical import INF
+from .numerical import INF
 
 def safe_next(generator, i=None):
   if i is None:

@@ -1,7 +1,7 @@
 from random import shuffle, choice
 from itertools import cycle, islice, permutations, chain, product, count
 from collections import Iterable
-from numerical import INF
+from .numerical import INF
 import operator
 
 def irange(start, stop=None, step=1): #np.arange

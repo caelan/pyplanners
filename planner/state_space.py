@@ -1,4 +1,4 @@
-from operators import *
+from .operators import *
 
 # TODO - can rewire state-space if found a better parent
 

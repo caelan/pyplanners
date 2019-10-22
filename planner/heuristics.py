@@ -1,4 +1,4 @@
-from helpful_actions import *
+from .helpful_actions import *
 
 def h_0(rg): return 0
 def h_naive(rg): return sum(1 for condition in rg.goal if rg.start.substate not in condition)

@@ -1,9 +1,9 @@
 from inspect import currentframe, getargvalues, getargspec, getfile
-from numerical import *
-from functions import *
+from .numerical import *
+from .functions import *
 from io import *
-from generators import *
-from objects import *
+from .generators import *
+from .objects import *
 import importlib
 import abc
 import os

@@ -4,11 +4,11 @@ from misc.functions import in_add
 from planner.progression.best_first import a_star_search, best_first_search, deferred_best_first_search
 
 def h_0(state, goal, operators):
-  return 0
+    return 0
 def h_naive(state, goal, operators):
-  return sum(1 for literal in goal.conditions if literal not in state)
+    return sum(1 for literal in goal.conditions if literal not in state)
 def h_blind(state, goal, operators):
-  return min(operator.cost for operator in ha_applicable(state, goal, operators))
+    return min(operator.cost for operator in ha_applicable(state, goal, operators))
 
 ###########################################################################
 
@@ -16,11 +16,11 @@ def filter_axioms(operators):
     return filter(lambda o: not o.is_axiom(), operators)
 
 def ha_all(state, goal, operators):
-  return operators
+    return operators
 def ha_applicable(state, goal, operators):
-  return [operator for operator in operators if operator(state) is not None]
+    return [operator for operator in operators if operator(state) is not None]
 def ha_sorted(state, goal, operators):
-  return sorted(ha_applicable(state, goal, operators), key=lambda o: o.cost)
+    return sorted(ha_applicable(state, goal, operators), key=lambda o: o.cost)
 
 def ha_combine(state, goal, operators, *helpful_actions):
     seen_operators = set()

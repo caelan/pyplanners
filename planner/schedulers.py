@@ -1,4 +1,3 @@
-
 class Scheduler(object):
   def __init__(self, rg):
     self.rg = rg

@@ -1,6 +1,6 @@
 from misc.utils import *
-from states import Substate
-from effects import ValueEffect
+from .states import Substate
+from .effects import ValueEffect
 
 # https://docs.python.org/2/library/functions.html#staticmethod
 

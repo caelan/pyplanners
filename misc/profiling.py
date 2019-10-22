@@ -1,4 +1,4 @@
-import cProfile, pstats, StringIO
+import cProfile, pstats
 import os
 
 def run_profile(function):
@@ -9,6 +9,7 @@ def run_profile(function):
   return results, pr
 
 def str_profile(pr, limit=25):
+  import StringIO
   output = StringIO.StringIO()
   ps = pstats.Stats(pr, stream=output)
   #print ps.__dict__.keys()
