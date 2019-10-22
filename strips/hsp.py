@@ -3,23 +3,39 @@ from heapq import heappush, heappop
 
 Pair = namedtuple('Node', ['cost', 'level'])
 
-def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):
+def compute_costs(state, goal, operators, op=max, unit=False):
     unprocessed = defaultdict(list) # TODO: store this in memory
     unsatisfied = {}
     for operator in operators + [goal]:
-        if len(operator.conditions) == 0:
-            unsatisfied[operator] = 1
-            unprocessed[None].append(operator)
-        else:
-            unsatisfied[operator] = len(operator.conditions)
-            for literal in operator.conditions:
-                unprocessed[literal].append(operator)
+        unsatisfied[operator] = len(operator.conditions)
+        for literal in operator.conditions:
+            unprocessed[literal].append(operator)
 
-    literal_costs = {literal: Pair(0, 0) for literal in unprocessed
-                     if (literal is not None) and (literal in state)}
-    literal_costs[None] = Pair(0, 0)
+    literal_costs = {literal: Pair(0, 0) for literal in unprocessed if literal in state}
     operator_costs = {}
     queue = [(pair.cost, literal) for literal, pair in literal_costs.items()]
+
+    def process_operator(operator):
+        operator_cost = operator_level = 0
+        if len(operator.conditions) != 0:
+            operator_cost = op(literal_costs[literal].cost for literal in operator.conditions)
+            operator_level = max(literal_costs[literal].level for literal in operator.conditions)
+        operator_costs[operator] = Pair(operator_cost, operator_level)
+        if operator == goal:
+            return True
+        literal_cost = operator_cost + (operator.cost if not unit else 1)
+        literal_level = operator_level + 1
+        # literal_level = operator_level + (1 if not operator.is_axiom() else 0)
+        for effect in operator.effects:
+            # Only computes costs for relevant operators
+            if (effect in unprocessed) and (effect not in literal_costs or (literal_cost < literal_costs[effect].cost)):
+                literal_costs[effect] = Pair(literal_cost, literal_level)
+                heappush(queue, (literal_cost, effect))
+        return False
+
+    for operator in unsatisfied:
+        if unsatisfied[operator] == 0:
+            process_operator(operator)
     while queue:
         _, literal = heappop(queue)
         if literal not in unprocessed:
@@ -27,27 +43,12 @@ def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):
         for operator in unprocessed[literal]:
             unsatisfied[operator] -= 1
             if unsatisfied[operator] == 0:
-                if len(operator.conditions) == 0:
-                    operator_cost = operator_level = 0
-                else:
-                    operator_cost = op(literal_costs[literal].cost for literal in operator.conditions)
-                    operator_level = max(literal_costs[literal].level for literal in operator.conditions)
-                operator_costs[operator] = Pair(operator_cost, operator_level)
-                if operator == goal:
-                    if greedy:
-                        return literal_costs, operator_costs
-                    continue
-                literal_cost = operator_cost + (operator.cost if not unit else 1)
-                literal_level = operator_level + 1
-                #literal_level = operator_level + (1 if not operator.is_axiom() else 0)
-                for effect in operator.effects:
-                    # Only computes costs for relevant operators
-                    if (effect in unprocessed) and (effect not in literal_costs or (literal_cost < literal_costs[effect].cost)):
-                        literal_costs[effect] = Pair(literal_cost, literal_level)
-                        heappush(queue, (literal_cost, effect))
+                process_operator(operator)
         del unprocessed[literal]
 
     return literal_costs, operator_costs
+
+###########################################################################
 
 def h_add(state, goal, operators):
     _, operator_costs = compute_costs(state, goal, operators, op=sum)
@@ -64,6 +65,8 @@ def h_add_unit(state, goal, operators):
 def h_max_unit(state, goal, operators):
     _, operator_costs = compute_costs(state, goal, operators, op=max, unit=True)
     return operator_costs[goal].cost if goal in operator_costs else None
+
+###########################################################################
 
 """
 def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):

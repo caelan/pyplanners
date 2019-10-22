@@ -37,7 +37,7 @@ class State(object):
     def __init__(self, atoms):
         self.atoms = frozenset(atoms)
     def holds(self, literal):
-        return literal.sign == (literal.positive() in self.atoms)
+        return literal.negated == (literal.positive() not in self.atoms)
     __contains__ = holds
     def __eq__(self, other):
         return (type(self) == type(other)) and (self.atoms == other.atoms)

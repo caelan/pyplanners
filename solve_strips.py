@@ -6,7 +6,7 @@ import argparse
 
 from time import time
 from misc.profiling import run_profile
-from misc.functions import randomize
+from misc.functions import randomize, elapsed_time
 from misc.utils import SEPARATOR
 from strips.utils import default_plan
 import strips.domains as domains
@@ -25,7 +25,7 @@ def solve(problem, print_profile):
         try:
             output = default_plan(initial, goal, randomize(operators))
         except KeyboardInterrupt:
-            output = None, time() - start_time
+            output = None, elapsed_time(start_time)
         #make_dir(directory)
         #print 'Created directory:', directory
         return output

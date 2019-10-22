@@ -8,8 +8,16 @@ class Plan(object):
   def __init__(self, start, operators):
     self.start = start
     self.operators = operators
-    self.cost = sum(operator.cost for operator in operators)
-    self.length = len(operators)
+  @property
+  def cost(self):
+    if not self.operators:
+      return 0
+    return sum(operator.cost for operator in self.operators)
+  @property
+  def length(self):
+    return len(self.operators)
+  def __iter__(self):
+    return iter(self.operators)
   def get_states(self):
     states = [self.start]
     for operator in self.operators:
