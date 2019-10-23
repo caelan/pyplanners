@@ -22,6 +22,8 @@ class Literal(object):
         return new
     __neg__ = negate # -literal
     __invert__ = negate # ~literal
+    def __iter__(self):
+        return iter(self.args)
     def __eq__(self, other):
         return (type(self) == type(other)) and (self.sign == other.sign) and (self.args == other.args)
     def __ne__(self, other):
@@ -39,6 +41,8 @@ class State(object):
     def holds(self, literal):
         return literal.negated == (literal.positive() not in self.atoms)
     __contains__ = holds
+    def __iter__(self):
+        return iter(self.atoms)
     def __eq__(self, other):
         return (type(self) == type(other)) and (self.atoms == other.atoms)
     def __ne__(self, other):
@@ -55,6 +59,8 @@ class PartialState(object):
     def contains(self, state):
         return all(literal in state for literal in self.conditions)
     __contains__ = contains
+    def __iter__(self):
+        return iter(self.conditions)
     def __eq__(self, other):
         return (type(self) == type(other)) and (self.conditions == other.conditions)
     def __ne__(self, other):
