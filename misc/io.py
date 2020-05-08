@@ -7,6 +7,11 @@ import hashlib # hashlib.sha224("Nobody inspects the spammish repetition").hexdi
 import platform
 import socket
 
+try:
+   user_input = raw_input
+except NameError:
+   user_input = input
+
 def computer_name():
   #return platform.node() # = platform.platform() = socket.gethostname() ~= os.environ['COMPUTERNAME']
   return platform.uname()[0]
@@ -74,4 +79,4 @@ def read_json(filename):
     return json.loads(f.read())
 
 def pause(message='Paused'):
-  raw_input(message)
+  user_input(message)

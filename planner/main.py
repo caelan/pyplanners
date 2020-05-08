@@ -1,6 +1,6 @@
 from .progression import *
 from .meta import *
-from .reachability_graph.relaxed_plan_graph import RelaxedPlanGraph
+#from .reachability_graph.relaxed_plan_graph import RelaxedPlanGraph
 from .connectivity_graph.relaxed_connectivity_graph import RelaxedConnectivityGraph
 from planner.heuristics import h_ff_add
 from planner.helpful_actions import ha_applicable_macro, ha_level_goal_macro_sorted, ha_relaxed_plan_goal_macro, ha_relaxed_plan_action_macro, \
@@ -13,8 +13,8 @@ def simple_debug(vertex): # TODO - pipe planner output to file/stdout
 
 def pause_debug(vertex):
   simple_debug(vertex)
-  raw_input('Hit enter to continue')
-  print
+  user_input('Hit enter to continue')
+  print()
 
 """
 def redo_scheduler_generator(goal, Scheduler):
