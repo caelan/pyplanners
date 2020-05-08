@@ -2,21 +2,29 @@ import time
 
 from misc.utils import INF, randomize
 #from .set_additive import *
-from sas.downward2 import Problem
+from sas.downward import Problem
 from .ff import *
 from planner.progression import *
 
-def h_0(state, goal, operators): return 0
-def h_naive(state, goal, operators): return sum(1 for var, value in goal.cond() if state[var] != value)
-def h_blind(state, goal, operators): return min(operator.cost for operator in ha_applicable(state, goal, operators))
+def h_0(state, goal, operators):
+  return 0
+def h_naive(state, goal, operators):
+  return sum(1 for var, value in goal.cond() if state[var] != value)
+def h_blind(state, goal, operators):
+  return min(operator.cost for operator in ha_applicable(state, goal, operators))
 
 ###########################################################################
 
-def ha_all(state, goal, operators): return filter_axioms(operators)
-def ha_applicable(state, goal, operators): return filter_axioms([operator for operator in operators if operator(state) is not None])
-def ha_all_random(state, goal, operators): return randomize(ha_all(state, goal, operators))
-def ha_applicable_random(state, goal, operators): return randomize(ha_applicable(state, goal, operators))
-def ha_sorted(state, goal, operators): return sorted(ha_applicable(state, goal, operators), key=lambda o: o.cost)
+def ha_all(state, goal, operators):
+  return filter_axioms(operators)
+def ha_applicable(state, goal, operators):
+  return filter_axioms([operator for operator in operators if operator(state) is not None])
+def ha_all_random(state, goal, operators):
+  return randomize(ha_all(state, goal, operators))
+def ha_applicable_random(state, goal, operators):
+  return randomize(ha_applicable(state, goal, operators))
+def ha_sorted(state, goal, operators):
+  return sorted(ha_applicable(state, goal, operators), key=lambda o: o.cost)
 
 def ha_combine(state, goal, operators, *helpful_actions):
   seen_operators = set()
@@ -28,6 +36,8 @@ def ha_combine(state, goal, operators, *helpful_actions):
     yield ha_operators
 
 ###########################################################################
+
+# TODO: custom heuristic
 
 def combine(heuristic, helpful_actions):
   return lambda s, g, o: (heuristic(s, g, o), helpful_actions(s, g, o))
@@ -66,7 +76,7 @@ default_generator = lambda i, g, o: single_generator(i, g, o, default_successors
 
 ###########################################################################
 
-from .downward2 import solve_sas
+from .downward import solve_sas
 
 def downward_plan(initial, goal, operators):
   t0 = time.time()
@@ -94,4 +104,5 @@ def default_plan(initial, goal, operators):
   return default_search(initial, goal, default_generator(initial, goal, operators))
 
 def default_derived_plan(initial, goal, operators, axioms):
-  return default_search(initial, goal, (lambda v: iter([default_successors(v.state, goal, operators + axioms)]), axioms))
+  return default_search(initial, goal, (
+    lambda v: iter([default_successors(v.state, goal, operators + axioms)]), axioms))

@@ -33,6 +33,8 @@ def ha_combine(state, goal, operators, *helpful_actions):
 
 ###########################################################################
 
+# TODO: custom heuristic
+
 def combine(heuristic, helpful_actions):
     return lambda s, g, o: (heuristic(s, g, o), helpful_actions(s, g, o))
 

@@ -1,4 +1,5 @@
 from misc.utils import *
+from misc.priority_queue import HeapElement
 
 Node = namedtuple('Node', ['cost', 'level'])
 
@@ -24,7 +25,7 @@ def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):
       for var2, value2 in operator.eff():
         if value2 not in variable_nodes[var2] or variable_node < variable_nodes[var2][value2]:
           variable_nodes[var2][value2] = variable_node
-          heappush(queue, (variable_node, var2, value2))
+          heappush(queue, HeapElement(variable_node, (var2, value2)))
 
   for operator in operators + [goal]:
     unsatisfied[operator] = len(operator.conditions)
@@ -38,11 +39,11 @@ def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):
     for value in conditions[var]:
       if state[var] == value:
         variable_nodes[var][value] = Node(0, 0)
-        queue.append((0, var, value))
+        heappush(queue, HeapElement(Node(0, 0), (var, value)))
 
   processed = defaultdict(set)
   while len(queue) != 0:
-    _, var, value = heappop(queue)
+    _, (var, value) = heappop(queue)
     if value in processed[var]: continue
     processed[var].add(value)
 

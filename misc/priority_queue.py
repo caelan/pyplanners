@@ -5,6 +5,17 @@ from itertools import count
 
 # TODO - multi-priority queues
 
+class HeapElement(object):
+  def __init__(self, key, value):
+    self.key = key
+    self.value = value
+  def __lt__(self, other):
+    return self.key < other.key
+  def __iter__(self):
+    return iter([self.key, self.value])
+  def __repr__(self):
+    return '{}({}, {})'.format(self.__class__.__name__, self.key, self.value)
+
 class Stack(object):
   def __init__(self, array=[]):
     self.stack = deque(array)

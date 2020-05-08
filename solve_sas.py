@@ -13,6 +13,7 @@ import sys
 import getopt
 import time
 import datetime
+import argparse
 
 DIRECTORY = './simulations/sas/planning/'
 
@@ -58,34 +59,18 @@ def solve(problem, print_profile):
 
 HELP_MESSAGE = 'python %s -p <problem>'%(__file__)
 
-def main(argv):
-  try:
-    opts, args = getopt.getopt(argv, 'hp:q',
-      ['help', 'problem=', 'profile'])
-  except getopt.GetoptError:
-    print(HELP_MESSAGE)
-    return
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-p', '--problem', default='restack_blocks')
+  parser.add_argument('-q', '--profile', action='store_true')
+  args = parser.parse_args()
 
-  problem = None
-  profile = False
-  for opt, arg in opts:
-    if opt in ('-h', '--help'):
-      print(HELP_MESSAGE)
-      return
-    elif opt in ('-p', '--problem'):
-      problem = arg
-    elif opt in ('-q', '--profile'):
-      profile = True
-
-  if problem is None:
-    print(HELP_MESSAGE)
-    return
-  if hasattr(domains, problem):
-    problem = getattr(domains, problem)
+  if hasattr(domains, args.problem):
+    problem = getattr(domains, args.problem)
   else:
-    print(problem, 'is not a valid problem')
+    print(args.problem, 'is not a valid problem')
     return
-  solve(problem, profile)
+  solve(problem, args.profile)
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+  main()
