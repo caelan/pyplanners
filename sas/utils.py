@@ -1,3 +1,5 @@
+import time
+
 from set_additive import *
 from ff import *
 from set_additive import applicable as sa_applicable, first_goals as sa_first_goals, \
@@ -80,28 +82,28 @@ class Problem(object):
     self.costs = True
 
     self.initial = initial
-    for var, val in initial.values.iteritems():
+    for var, val in initial.values.items():
       self.add_val(var, val)
     self.goal = goal
-    for var, val in goal.conditions.iteritems():
+    for var, val in goal.conditions.items():
       self.add_val(var, val)
 
     self.actions = actions
     for action in self.actions:
-      for var, val in action.conditions.iteritems():
+      for var, val in action.conditions.items():
         self.add_val(var, val)
-      for var, val in action.effects.iteritems():
+      for var, val in action.effects.items():
         self.add_val(var, val)
 
   def print_problem(self):
-    print self.initial.values.keys()
-    print len(self.initial.values)
-    print len(self.var_order)
-    print set(self.var_order) - set(self.initial.values.keys())
+    print(self.initial.values.keys())
+    print(len(self.initial.values))
+    print(len(self.var_order))
+    print(set(self.var_order) - set(self.initial.values.keys()))
     for var in self.var_order:
-      print var
-      print self.var_val_order[var]
-      print
+      print(var)
+      print(self.var_val_order[var])
+      print()
 
   def add_var(self, var):
     if var not in self.var_indices:
@@ -127,9 +129,9 @@ class Problem(object):
     return self.get_var(var), self.get_val(var, val)
 
 def downward_plan(initial, goal, operators):
-  t0 = time()
+  t0 = time.time()
   problem = Problem(initial, goal, operators, [])
-  return solve_sas(problem), time() - t0
+  return solve_sas(problem), time.time() - t0
 
 ###########################################################################
 

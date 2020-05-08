@@ -12,7 +12,7 @@ def str_profile(pr, limit=25):
   import StringIO
   output = StringIO.StringIO()
   ps = pstats.Stats(pr, stream=output)
-  #print ps.__dict__.keys()
+  #print(ps.__dict__.keys())
   directory = os.getcwd()
   for (f, l, fn), value in ps.stats.items():
     if directory in f:
@@ -23,7 +23,7 @@ def str_profile(pr, limit=25):
 
   ps.print_stats(limit) # ps.print_stats(.1) # ps.reverse_order()
   so = '\n' + '\n'.join(output.getvalue().split('\n')[::-1]).strip('\n')
-  # print '\n' + output.getvalue().strip('\n') + '\n'
+  # print('\n' + output.getvalue().strip('\n') + '\n')
   output.close()
   return so
 

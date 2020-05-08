@@ -58,7 +58,7 @@ class ReachabilityGraph(object): # TODO - Maybe just call ConnectivityGraph and 
       for condition in value.conditions:
         self.connector(condition).connect(edge)
       if CONNECT_EFFECTS and hasattr(value, 'effects'):
-        for variable, effect in value.effects.iteritems():
+        for variable, effect in value.effects.items():
           if isinstance(effect, ValueEffect):
             edge.connect(self.vertex(Substate({variable: effect.value})))
     return self.edges[value]

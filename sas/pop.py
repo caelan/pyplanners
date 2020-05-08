@@ -31,7 +31,8 @@ class UniqueOperator(object):
 #    return {}
 #  raise ValueError(action)
 
-def achieves(operator, (var, val)):
+def achieves(operator, item):
+  (var, val) = item
   if isinstance(operator, Operator):
     return var in operator.effects and operator.effects[var] == val
   if isinstance(operator, UniqueOperator):
@@ -43,7 +44,8 @@ def achieves(operator, (var, val)):
   raise ValueError(operator)
   #return var in effects(action) and effects(action)[var] == val
 
-def deletes(operator, (var, val)):
+def deletes(operator, item):
+  (var, val) = item
   if isinstance(operator, Operator):
     return var in operator.effects and operator.effects[var] != val
   if isinstance(operator, UniqueOperator):
@@ -70,7 +72,8 @@ def add_constraint(initial_const, constraints):
         consts.append((x, x1))
   return new_constraints
 
-def possible((x,y), constraint):
+def possible(position, constraint):
+  (x, y) = position
   return (y,x) not in constraint
 
 def protect_cl_for_actions(actions, constrs, clink):
@@ -145,7 +148,7 @@ class PartialPlan(object):
     return str((len(self.actions), len(self.constraints), len(self.agenda), len(self.causal_links)))
 
   def extract_plan(self):
-    #print self
+    #print(self)
     other_acts = set(self.actions)
     sorted_acts = []
     while other_acts:
@@ -163,7 +166,7 @@ class PartialPlan(object):
     return len(self.agenda)
 
   def add_heursitic(self, operators): # TODO - cache this
-    #print GoalConditions(self.agenda)
+    #print(GoalConditions(self.agenda))
     #return h_add(self.actions[0], GoalConditions([g for g, _ in self.agenda]), operators)
     return h_max(self.actions[0], GoalConditions([g for g, _ in self.agenda]), operators)
     #return h_add(self.actions[0], self.actions[1], operators)
@@ -234,9 +237,9 @@ def pop_solve(initial, goal, operators, max_length=float('inf')):
       plan = queue.popleft()
     else:
       _, plan = heappop(queue)
-    #print len(queue), sorted(queue, key=lambda q: q.rank())
-    print iterations, expanded, plan.heuristic(operators), plan.length()#, len(neighbors)
-    #print plan
+    #print(len(queue), sorted(queue, key=lambda q: q.rank()))
+    print(iterations, expanded, plan.heuristic(operators), plan.length()) #, len(neighbors)
+    #print(plan)
     #raw_input()
     iterations += 1
     for new_plan in plan.neighbors(operators):

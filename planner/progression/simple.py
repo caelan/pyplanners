@@ -1,4 +1,4 @@
-from utils import *
+from .utils import *
 from ..state_space import *
 
 def search(pop, start, goal, generator, max_time, max_iterations, max_generations, max_cost, max_length, debug):

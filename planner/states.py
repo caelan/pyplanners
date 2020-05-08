@@ -22,7 +22,7 @@ class Substate(DictPrintObject, Mapping):
   def __getitem__(self, var):
     return self.get(var)
   def __iter__(self):
-    return self.__dict__[HASH_DICT].iteritems()
+    return self.__dict__[HASH_DICT].items()
   def __len__(self):
     return len(self.__dict__[HASH_DICT])
   def __str__(self):

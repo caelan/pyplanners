@@ -38,7 +38,7 @@ class WashBrush(Action):
         self.negativeEffects = [('paintsColor', brush, color)]
 
 def blocks_paint_1():
-        print 'Paint Blocks 1'
+        print('Paint Blocks 1')
         BLOCKS = ['blockA']
         SPRAYERS = []
         BRUSHES = ['brush']
@@ -73,7 +73,7 @@ def blocks_paint_1():
         blocksProblem.findPlan(maxNodes = 100000)
 
 def blocks_paint_2():
-        print 'Paint Blocks 2'
+        print('Paint Blocks 2')
         BLOCKS = ['blockA', 'blockB']
         SPRAYERS = ['blueSprayer']
         BRUSHES = ['brush']
@@ -116,7 +116,7 @@ def blocks_paint_2():
         blocksProblem.findPlan(maxNodes = 100000)
 
 def blocks_paint_3():
-        print 'Paint Blocks 3'
+        print('Paint Blocks 3')
         BLOCKS = ['blockA', 'blockB', 'blockC']
         SPRAYERS = ['redSprayer', 'blueSprayer', 'greenSprayer']
         BRUSHES = ['brush']

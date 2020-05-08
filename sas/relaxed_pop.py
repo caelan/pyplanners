@@ -20,7 +20,8 @@ def add_constraint(initial_const, constraints):
         consts.append((x, x1))
   return new_constraints
 
-def achieves(operator, (var, val)):
+def achieves(operator, item):
+  (var, val) = item
   return var in operator.effects and operator.effects[var] == val
 
 def induces_cycle(operator, goal, constraints):
@@ -134,7 +135,7 @@ def relaxed_pop(initial, goal, operators, QueueClass=FIFOPriorityQueue):
   queue.push(priority_fn(initial_plan), initial_plan)
   while queue:
     plan = queue.pop()
-    print iterations, expanded, plan.length(), plan.unsatisfied_goals(), priority_fn(plan)
+    print(iterations, expanded, plan.length(), plan.unsatisfied_goals(), priority_fn(plan))
     iterations += 1
     for new_plan in plan.neighbors(operators):
       expanded += 1

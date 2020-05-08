@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 from misc.utils import *
 from misc.profiling import *
 from planner.main import default_plan, default_scheduler_generator
@@ -14,31 +16,31 @@ def solve(problem_name, print_profile=False):
   start, goal, Scheduler = getattr(problems, problem_name)()
   generator = default_scheduler_generator(goal, Scheduler)
 
-  print SEPARATOR + '\nSolving planning problem ' + problem_name
+  print(SEPARATOR + '\nSolving planning problem ' + problem_name)
 
   def execute():
     output = default_plan(start, goal, generator)
     make_dir(directory)
-    print 'Created directory:', directory
+    print('Created directory:', directory)
     return output
 
   (plan_data, search_data), profile_output = profile(execute, filename=directory+'profile')
-  print 'Wrote', directory+'profile'
-  print SEPARATOR
+  print('Wrote', directory+'profile')
+  print(SEPARATOR)
 
   if plan_data is None:
     data = str_line('Could not find plan\n')
   else:
     data = str(plan_data)
   data += '\n' + str(search_data)
-  print data
+  print(data)
   write(directory + 'planner_statistics', data)
-  print 'Wrote', directory+'planner_statistics'
+  print('Wrote', directory+'planner_statistics')
 
   if print_profile:
-    print SEPARATOR
-    print profile_output
-  print SEPARATOR
+    print(SEPARATOR)
+    print(profile_output)
+  print(SEPARATOR)
 
 ###########################################################################
 
@@ -48,14 +50,14 @@ def main(argv):
   try:
     opts, args = getopt.getopt(argv, 'hp:q', ['help', 'problem=', 'profile'])
   except getopt.GetoptError:
-    print HELP_MESSAGE
+    print(HELP_MESSAGE)
     return
 
   problem_name = None
   print_profile = False
   for opt, arg in opts:
     if opt in ('-h', '--help'):
-       print HELP_MESSAGE
+       print(HELP_MESSAGE)
        return
     elif opt in ('-p', '--problem'):
        problem_name = arg
@@ -63,10 +65,10 @@ def main(argv):
       print_profile = True
 
   if problem_name is None:
-    print HELP_MESSAGE
+    print(HELP_MESSAGE)
     return
   if not hasattr(problems, problem_name):
-    print problem_name, 'is not a valid problem'
+    print(problem_name, 'is not a valid problem')
     return
   solve(problem_name, print_profile=print_profile)
 

@@ -6,11 +6,12 @@ from state_expanders import *
 # - Other factored planning
 
 def search(start, goal, hierarchy, level=0):
-  level_start = State({v: start.get(v) for v in start.values if some(lambda (variables, _): v in variables, hierarchy[:level + 1])})
+  level_start = State({v: start.get(v) for v in start.values
+                       if some(lambda item: v in item[0], hierarchy[:level + 1])})
 
-  print '-----------------------------------------------------------------\n'
+  print('-----------------------------------------------------------------\n')
 
-  print level, level_start, goal
+  print(level, level_start, goal)
   plan, data = hierarchy[level][1](level_start, goal)
 
 
@@ -18,8 +19,8 @@ def search(start, goal, hierarchy, level=0):
   if plan is None: return None, planner.main.SearchData(time, iterations, states)
 
 
-  print [action.name for (action, _) in plan.sequence if action is not None]
-  print
+  print([action.name for (action, _) in plan.sequence if action is not None])
+  print()
 
   sequence = [(None, start)]
   cost, length = plan.cost, plan.length

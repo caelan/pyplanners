@@ -65,7 +65,7 @@ class ConnectivityGraph(object): # TODO - Maybe just call ConnectivityGraph and 
       for condition in value.conditions: # NOTE - might want
         self.connector(condition).connect(edge)
       #if CONNECT_EFFECTS and hasattr(value, 'effects'):
-      #  for variable, effect in value.effects.iteritems():
+      #  for variable, effect in value.effects.items():
       #    if isinstance(effect, ValueEffect):
       #      edge.connect(self.vertex(Substate({variable: effect.value})))
     return self.edges[value]
@@ -74,8 +74,8 @@ class ConnectivityGraph(object): # TODO - Maybe just call ConnectivityGraph and 
     return [edge.value for vertex in goal_connector.vertices for _, edge in vertex.sources] # TODO - source vertex
   def add_achiever(self, action, goal_connector):
     assert all(isinstance(eff, ValueEffect) for eff in action.effects.values())
-    effect_vertex = self.vertex(Substate({var: value for var, value in action.fixed_image().iteritems()
-                                        if var in goal_connector.condition.variables})) # TODO - conditional effects
+    effect_vertex = self.vertex(Substate({var: value for var, value in action.fixed_image().items()
+                                          if var in goal_connector.condition.variables})) # TODO - conditional effects
     #if action in self.edges: return False # Returns false for existing actions
     if goal_connector.satisfies(effect_vertex):
       edge = self.edge(action)
@@ -84,7 +84,7 @@ class ConnectivityGraph(object): # TODO - Maybe just call ConnectivityGraph and 
       effect_vertex.connect(goal_connector)
       edge.connect(effect_vertex)
     else:
-      print action, goal_connector
+      print(action, goal_connector)
       raise RuntimeError('Action does not achieve goal') # TODO - remove
     return True
 

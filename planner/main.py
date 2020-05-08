@@ -9,7 +9,7 @@ from .generators import reachability_generator, connectivity_generator
 from misc.utils import *
 
 def simple_debug(vertex): # TODO - pipe planner output to file/stdout
-  print '{state_space}{vertex}\n'.format(state_space=vertex.state_space, vertex=vertex)
+  print('{state_space}{vertex}\n'.format(state_space=vertex.state_space, vertex=vertex))
 
 def pause_debug(vertex):
   simple_debug(vertex)

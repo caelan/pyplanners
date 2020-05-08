@@ -76,7 +76,7 @@ def compute_costs(state, goal, operators, op=max, unit=False, greedy=True):
             costs[literal] = 0
 
     unseen_operators = set(operators)
-    queue = [(cost, literal) for literal, cost in costs.iteritems()]
+    queue = [(cost, literal) for literal, cost in costs.items()]
     heapify(queue)
     processed = set()
     while len(queue) != 0:

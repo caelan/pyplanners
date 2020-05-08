@@ -36,7 +36,7 @@ def sample_categorical(categories):
 #  return np.random.multinomial(1, np.array(categories.values())/sum(categories.values()), size=1)
 
 def sample_boltzmann(categories):
-  return sample_categorical({k: exp(v) for k, v in categories.iteritems()})
+  return sample_categorical({k: exp(v) for k, v in categories.items()})
 
 def uniform_categorical(categories):
   return {c: 1./len(categories) for c in categories}
@@ -50,10 +50,10 @@ def merge_categorical(one, two, p=.5):
   return merged
 
 def joint_categorical(one, two):
-  return {(x1, x2): p1*p2 for x1, p1 in one.iteritems() for x2, p2 in two.iteritems()}
+  return {(x1, x2): p1*p2 for x1, p1 in one.items() for x2, p2 in two.items()}
 
 def normalize_categorical(dist):
-  return {c: p/sum(dist.values()) for c, p in dist.iteritems()}
+  return {c: p/sum(dist.values()) for c, p in dist.items()}
 
 def positive_hash(x):
   return hash(x)%((sys.maxsize+1)*2)

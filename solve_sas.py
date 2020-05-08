@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#from __future__ import print_function
+from __future__ import print_function
 
 from misc.profiling import *
 from sas.utils import *
@@ -10,6 +10,8 @@ from planner.meta.forward_hierarchy import fixed_search, pp_hierarchy_level
 import sas.domains as domains
 import sys
 import getopt
+import time
+import datetime
 
 DIRECTORY = './simulations/sas/planning/'
 
@@ -17,10 +19,10 @@ def solve(problem, print_profile):
   initial, goal, operators = problem()
   dt = datetime.datetime.now()
   directory = DIRECTORY + '{}/{}/{}/'.format(problem.__name__, dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
-  print SEPARATOR + '\nSolving sas problem ' + problem.__name__
+  print(SEPARATOR + '\nSolving sas problem ' + problem.__name__)
 
   def execute():
-    start_time = time()
+    start_time = time.time()
     try:
       #output = default_plan(initial, goal, randomize(operators))
       output = downward_plan(initial, goal, randomize(operators))
@@ -30,25 +32,25 @@ def solve(problem, print_profile):
       #output = pop_solve(initial, goal, operators, max_length=6)
       #output = pop_solve(initial, goal, randomize(operators))
     except KeyboardInterrupt:
-      output = None, time() - start_time
+      output = None, time.time() - start_time
     #make_dir(directory)
-    #print 'Created directory:', directory
+    #print('Created directory:', directory)
     return output
 
   #(plan, state_space), profile_output = profile(execute, filename=directory+'profile')
   (plan, state_space), profile_output = run_profile(execute)
-  print 'Wrote', directory+'profile'
-  print SEPARATOR
+  print('Wrote', directory+'profile')
+  print(SEPARATOR)
 
   data = (str(plan) if plan is not None else 'Infeasible') + '\n\n' + str(state_space)
-  print data
+  print(data)
   #write(directory + 'planner_statistics', data)
-  #print 'Wrote', directory+'planner_statistics'
+  #print('Wrote', directory+'planner_statistics')
 
   if print_profile:
-    print SEPARATOR
-    print str_profile(profile_output)
-  print SEPARATOR
+    print(SEPARATOR)
+    print(str_profile(profile_output))
+  print(SEPARATOR)
 
 ###########################################################################
 
@@ -59,14 +61,14 @@ def main(argv):
     opts, args = getopt.getopt(argv, 'hp:q',
       ['help', 'problem=', 'profile'])
   except getopt.GetoptError:
-    print HELP_MESSAGE
+    print(HELP_MESSAGE)
     return
 
   problem = None
   profile = False
   for opt, arg in opts:
     if opt in ('-h', '--help'):
-      print HELP_MESSAGE
+      print(HELP_MESSAGE)
       return
     elif opt in ('-p', '--problem'):
       problem = arg
@@ -74,12 +76,12 @@ def main(argv):
       profile = True
 
   if problem is None:
-    print HELP_MESSAGE
+    print(HELP_MESSAGE)
     return
   if hasattr(domains, problem):
     problem = getattr(domains, problem)
   else:
-    print problem, 'is not a valid problem'
+    print(problem, 'is not a valid problem')
     return
   solve(problem, profile)
 

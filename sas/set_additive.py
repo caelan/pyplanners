@@ -81,16 +81,17 @@ def none(*args):
   return []
 
 def applicable(goal, operator_nodes, *args):
-  return filter(lambda o: len(operator_nodes[o].operators) == 0, operator_nodes)
+  return list(filter(lambda o: len(operator_nodes[o].operators) == 0, operator_nodes))
 
 def any_goals(goal, operator_nodes, variable_nodes):
   goals = set(flatten(o.cond() for o in (operator_nodes[goal].operators | {goal})))
-  return filter(lambda o: any(e in goals for e in o.eff()), applicable(goal, operator_nodes, variable_nodes))
+  return list(filter(lambda o: any(e in goals for e in o.eff()), applicable(goal, operator_nodes, variable_nodes)))
 
 def first_goals(goal, operator_nodes, variable_nodes):
-  goals = filter(lambda (var, value): len(variable_nodes[var][value].operators) == 1,
-                 set(flatten(o.cond() for o in (operator_nodes[goal].operators | {goal}))))
-  return filter(lambda o: o != goal and any(e in goals for e in o.eff()), applicable(goal, operator_nodes, variable_nodes))
+  goals = list(filter(lambda item: len(variable_nodes[item[0]][item[1]].operators) == 1,
+                      set(flatten(o.cond() for o in (operator_nodes[goal].operators | {goal})))))
+  return list(filter(lambda o: o != goal and any(e in goals for e in o.eff()),
+                     applicable(goal, operator_nodes, variable_nodes)))
 
 def first_operators(goal, operator_nodes,  *args):
   return [operator for operator in operator_nodes[goal].operators if len(operator_nodes[operator].operators) == 0]

@@ -9,7 +9,7 @@ class ActionsOracle:
     self.values_to_actions = {}
     self.variable_sets = set()
     for action in actions:
-      key = frozenset(action.preconditions.values.iteritems())
+      key = frozenset(action.preconditions.values.items())
       if key not in self.values_to_actions:
         self.values_to_actions[key] = []
       self.values_to_actions[key].append(action)
@@ -55,8 +55,8 @@ class ActionsOracle:
             self.causal_edges[e1][e2] += 1
             edges.add((e1, e2))
 
-    print 'Full Causal Graph'
-    print self.causal_edges
+    print('Full Causal Graph')
+    print(self.causal_edges)
 
     strongly_connected_componets = []
     global visited, stack
@@ -88,8 +88,8 @@ class ActionsOracle:
       if v not in index:
         strong_connect(v)
 
-    print 'Strongly Connected Components'
-    print strongly_connected_componets
+    print('Strongly Connected Components')
+    print(strongly_connected_componets)
 
     for c in range(len(strongly_connected_componets)):
       component = strongly_connected_componets[c]
@@ -105,11 +105,11 @@ class ActionsOracle:
         for e in range(s + 1):
           self.causal_edges[strongly_connected_componets[c][s]][strongly_connected_componets[c][e]] = 0
 
-    print 'Strongly Connected Components'
-    print strongly_connected_componets
+    print('Strongly Connected Components')
+    print(strongly_connected_componets)
 
-    print 'Prunned Casual Graph'
-    print self.causal_edges
+    print('Prunned Casual Graph')
+    print(self.causal_edges)
 
     quit()
 
@@ -125,7 +125,8 @@ class ActionsOracle:
     for variables in self.variable_sets:
       if variable not in variables: continue
 
-      for tup in product(*([[(variable, value)]] + [map(lambda val: (v, val), current_variables[v].keys()) for v in variables if v != variable])):
+      for tup in product(*([[(variable, value)]] + [list(map(lambda val: (v, val), current_variables[v].keys()))
+                                                         for v in variables if v != variable])):
         key = frozenset(tup)
         if key in self.values_to_actions:
           relevant_actions.extend(self.values_to_actions[key])
@@ -193,11 +194,11 @@ def plan(start, goal, actions, parameters = {
   heuristic = lambda state: getattr(crg_heuristics, 'h_' + HEURISTIC)(state, goal, actions_oracle)
   helpful_actions = getattr(crg_heuristics, 'ha_' + HELPFUL_ACTIONS)
 
-  print
-  print '---------------------------------------------------------------------------------------'
-  print
-  print 'Solving Planning Task'
-  print
+  print()
+  print('---------------------------------------------------------------------------------------')
+  print()
+  print('Solving Planning Task')
+  print()
 
   if SEARCH == 'best_first':
     (plan, iterations, run_time) = best_first_search(start, goal, actions_oracle, heuristic, helpful_actions)
@@ -207,28 +208,30 @@ def plan(start, goal, actions, parameters = {
     assert False
 
   #global crg_heuristics.total_actions_processed, crg_heuristics.total_plan_graph_size, crg_heuristics.total_plan_graph_uses
-  print crg_heuristics.total_actions_processed, crg_heuristics.total_plan_graph_values, crg_heuristics.total_plan_graph_actions, crg_heuristics.total_plan_graph_uses
-  print float(crg_heuristics.total_plan_graph_values)/crg_heuristics.total_plan_graph_uses, float(crg_heuristics.total_plan_graph_actions)/crg_heuristics.total_plan_graph_uses, float(crg_heuristics.total_actions_processed)/crg_heuristics.total_plan_graph_uses
+  print(crg_heuristics.total_actions_processed, crg_heuristics.total_plan_graph_values,
+        crg_heuristics.total_plan_graph_actions, crg_heuristics.total_plan_graph_uses)
+  print(float(crg_heuristics.total_plan_graph_values)/crg_heuristics.total_plan_graph_uses,
+        float(crg_heuristics.total_plan_graph_actions)/crg_heuristics.total_plan_graph_uses,
+        float(crg_heuristics.total_actions_processed)/crg_heuristics.total_plan_graph_uses)
 
 
-  print '---------------------------------------------------------------------------------------'
-  print
+  print('---------------------------------------------------------------------------------------')
+  print()
   if not plan:
-    print 'Could not find plan. Took', run_time, 'seconds with', iterations, 'states explored'
-    print
+    print('Could not find plan. Took', run_time, 'seconds with', iterations, 'states explored')
+    print()
   else:
     (sequence, cost) = plan
-    print 'Found plan of cost ' + str(cost) + '. Took', run_time, 'seconds with', iterations, 'states explored'
-    print
+    print('Found plan of cost ' + str(cost) + '. Took', run_time, 'seconds with', iterations, 'states explored')
+    print()
 
     step = 1
     for (action, state) in sequence:
       if action is not None:
-        print 'Action', step, '|', action
-        print
+        print('Action', step, '|', action)
+        print()
         step += 1
-
-  print 'Done!'
-  print
+  print('Done!')
+  print()
 
   return (plan, iterations, run_time)

@@ -27,17 +27,17 @@ def solve(problem, print_profile):
         except KeyboardInterrupt:
             output = None, elapsed_time(start_time)
         #make_dir(directory)
-        #print 'Created directory:', directory
+        #print('Created directory:', directory)
         return output
 
     (plan, state_space), profile_output = run_profile(execute)
-    #print 'Wrote', directory+'profile'
+    #print('Wrote', directory+'profile')
     print(SEPARATOR)
 
     data = (str(plan) if plan is not None else 'Infeasible') + '\n\n' + str(state_space)
     print(data)
     #write(directory + 'planner_statistics', data)
-    #print 'Wrote', directory+'planner_statistics'
+    #print('Wrote', directory+'planner_statistics')
 
     if print_profile:
         print(SEPARATOR)

@@ -11,7 +11,7 @@ def incremental_goal_addition(start, goal, search): # Replace generator_fn with 
     operators += plan_data.operators
     current = MacroOperator(*plan_data.operators)(current)[-1]
     if current in goal: break
-    print 50*'-', '\n'
+    print(50*'-', '\n')
 
   if current not in goal: return None, SearchData(time() - start_time, None, None)
   return PlanData(start, operators), SearchData(time() - start_time, None, None)

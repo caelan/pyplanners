@@ -13,7 +13,7 @@ def h_blind(state, goal, operators):
 ###########################################################################
 
 def filter_axioms(operators):
-    return filter(lambda o: not o.is_axiom(), operators)
+    return list(filter(lambda o: not o.is_axiom(), operators))
 
 def ha_all(state, goal, operators):
     return operators

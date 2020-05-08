@@ -1,1 +1,1 @@
-from incremental_goal_addition import incremental_goal_addition
+from .incremental_goal_addition import incremental_goal_addition

@@ -40,7 +40,7 @@ class StableQueue(object):
 class PriorityQueue(StableQueue):
   def __init__(self, array=[]):
     super(PriorityQueue, self).__init__()
-    self.queue = map(lambda x: self.new_node(*x), array)
+    self.queue = list(map(lambda x: self.new_node(*x), array))
     heapify(self.queue)
   def peek(self):
     return self.queue[0].element

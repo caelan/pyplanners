@@ -39,7 +39,7 @@ def run_script(*args):
   # TODO - none of these wait if you redirect STDOUT. Maybe something to do with the mathematica/mac...
   #result = os.system('./make_movie.m ' + directory + ' ' + extension)
   #p = subprocess.Popen(['./make_movie.m', directory, extension], stdout=subprocess.PIPE, sterr=subprocess.PIPE)
-  #print p.communicate()
+  #print(p.communicate())
   err = subprocess.call(args) # script = './make_movie.m',
   if err != 0:
     return False
@@ -54,7 +54,7 @@ def write(filename, string):
     f.write(string)
 
 def print_and_write(string, f):
-  print string
+  print(string)
   f.write(string + '\n')
 
 def write_pickle(filename, data): # NOTE - cannot pickle lambda or nested functions

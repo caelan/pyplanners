@@ -124,9 +124,9 @@ class RelaxedPlanGraph(ReachabilityGraph):
   #  return filter(lambda (v, e): l_fn(e) == l_fn(vertex)-1 and (v is None or l_fn(v)==l_fn(vertex)-1), vertex.sources) # TODO - fix
 
   def all_vertex_achievers(self, vertex, l_fn):
-    return filter(lambda (v, e): l_fn(e) < l_fn(vertex) and (v is None or l_fn(v) < l_fn(vertex)), vertex.sources)
+    return list(filter(lambda item: l_fn(item[1]) < l_fn(vertex) and (item[0] is None or l_fn(item[0]) < l_fn(vertex)), vertex.sources))
   def all_connector_achievers(self, connector, l_fn):
-    return filter(lambda v: l_fn(v) <= l_fn(connector), connector.vertices)
+    return list(filter(lambda v: l_fn(v) <= l_fn(connector), connector.vertices))
 
   def discounted_vertex_cost(self, vertex, l_fn, h_fn):
     if vertex in self.relaxed_plan_vertices[l_fn(vertex)]: return 0
@@ -135,7 +135,7 @@ class RelaxedPlanGraph(ReachabilityGraph):
     return op(min(self.discounted_vertex_cost(v, l_fn, h_fn) for v in self.all_connector_achievers(c, l_fn)) for c in edge.connectors)
 
   def easiest_edge(self, vertex, l_fn, h_fn): # TODO - factor in v when computing the cost and level
-    return argmin(lambda (v, e): self.discounted_edge_cost(e, l_fn, h_fn), self.all_vertex_achievers(vertex, l_fn))
+    return argmin(lambda item: self.discounted_edge_cost(item[1], l_fn, h_fn), self.all_vertex_achievers(vertex, l_fn))
   def easiest_vertex(self, connector, l_fn, h_fn):
     return argmin(lambda v: self.discounted_vertex_cost(v, l_fn, h_fn), self.all_connector_achievers(connector, l_fn))
 

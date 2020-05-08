@@ -6,7 +6,7 @@ from .conditions import SubstateCondition
 class Operator(object):
   def __init__(self, args):
     self.args = args
-    for k, v in args.iteritems():
+    for k, v in args.items():
       setattr(self, k, v)
     self.conditions = []
     self.effects = {}
@@ -31,7 +31,8 @@ class Operator(object):
           fc[var] = value
     return fc
   def fixed_effects(self):
-    return {var : effect.value for var, effect in self.effects.iteritems() if isinstance(effect, ValueEffect)}
+    return {var: effect.value for var, effect in self.effects.items()
+            if isinstance(effect, ValueEffect)}
   def fixed_image(self):
     return merge_dicts(self.fixed_conditions(), self.fixed_effects())
   #def image(self):

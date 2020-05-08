@@ -89,7 +89,7 @@ def fixed_search(start, goal, operators, subsearch, hierarchy, level=0):
     modified_operators.append(modified_operator)
 
   plan, state_space = subsearch(start, goal, modified_operators)
-  #print plan.length
+  #print(plan.length)
   if plan is None:
     return None, None
 
@@ -99,8 +99,8 @@ def fixed_search(start, goal, operators, subsearch, hierarchy, level=0):
   for modified_operator in plan.operators:
     operator = modified_operator.original
     if state not in operator:
-      #print state, operator
-      #print
+      #print(state, operator)
+      #print()
       subplan, subdata = fixed_search(state, Goal(operator.conditions), operators, subsearch, hierarchy, level=level+1)
       if subplan is None:
         return None, None
@@ -125,7 +125,7 @@ def recursive_search(start, goal, operators, subsearch, hierarchy, level=0, goal
   #for operator in plan.operators + [goal]: # TODO - should I assume that the last operator achieves the goal or not?
   for operator in plan.operators:
     if state not in operator:
-      print state, operator
+      print(state, operator)
       subgoal = Goal(operator.conditions) # Goal-level different than new operator level or something
       subplan, subdata = recursive_search(state, subgoal, operators, subsearch, hierarchy, level=level+1)
       #subplan, subdata = recursive_search(state, subgoal, operators, subsearch, hierarchy, level=0, goal_level=level+1) # TODO - parent level?

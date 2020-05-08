@@ -50,7 +50,7 @@ def write_initial(problem):
 def write_goal(problem):
   s = 'begin_goal\n' \
       '%s\n'%len(problem.goal.conditions)
-  for item in problem.goal.conditions.iteritems():
+  for item in problem.goal.conditions.items():
     var, val = problem.get_var_val(*item)
     s += '%s %s\n'%(var, val)
   s += 'end_goal\n'
@@ -64,11 +64,11 @@ def write_actions(problem):
     s += 'begin_operator\n' \
          'a%s\n' \
          '%s\n'%(i, len(action.conditions))
-    for item in action.conditions.iteritems():
+    for item in action.conditions.items():
       var, val = problem.get_var_val(*item)
       s += '%s %s\n'%(var, val)
     s += '%s\n'%len(action.effects)
-    for item in action.effects.iteritems():
+    for item in action.effects.items():
       var, val = problem.get_var_val(*item)
       s += '0 %s -1 %s\n'%(var, val)
     s += '%s\n' \
@@ -129,9 +129,9 @@ def fast_downward(debug=False, max_time=30, max_cost='infinity'):
   t0 = time()
   p = os.popen(command)
   output = p.read()
-  print command, time() - t0
+  print(command, time() - t0)
   if debug:
-    print output
+    print(output)
   if not os.path.exists(OUTPUT_PATH):
     return None
   return read(OUTPUT_PATH)

@@ -2,12 +2,13 @@ from states import *
 
 class Operator(PartialState):
   def __init__(self, args):
-    for k, v in args.iteritems(): setattr(self, k, v)
+    for k, v in args.items():
+        setattr(self, k, v)
     self.args = args # TODO - use FrozenDict instead
     self._frozen_args = frozenset(args.items())
     self._hash = None
   def eff(self):
-    return self.effects.iteritems()
+    return self.effects.items()
   def apply(self, state):
     return State(merge_dicts(state.values, self.effects))
   def __call__(self, state):

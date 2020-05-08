@@ -112,9 +112,9 @@ def achieving_macro_operators(rg, parallel=False, greedy=True):
         sequences.add(MacroOperator(*sequence))
   for vertex in rg.initial_vertices():
     recur(vertex, rg.initial_state(), [])
-  #operator_arcs = {edge.value: [next_edge for vert in arcs for next_edge in vertex_arcs[vert]] for edge, arcs in edge_arcs.iteritems()}
+  #operator_arcs = {edge.value: [next_edge for vert in arcs for next_edge in vertex_arcs[vert]] for edge, arcs in edge_arcs.items()}
   #for sequence in sequences:
-  #  print sequence, operator_arcs[sequence.operators[-1]]
+  #  print(sequence, operator_arcs[sequence.operators[-1]])
   #print
   return sequences
 
@@ -131,7 +131,7 @@ def edge_test_fn(goal_vertices=None, goal_connectors=None, goal_edges=None):
   return edge_test
 
 def filter_short(macro_ops, k=2):
-  filtered = filter(lambda mo: len(mo)>=k, macro_ops)
+  filtered = list(filter(lambda mo: len(mo) >= k, macro_ops))
   if len(filtered) == 0:
     return macro_ops
   return filtered

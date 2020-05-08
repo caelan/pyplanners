@@ -56,12 +56,12 @@ def hill_climbing_search(start, goal, generator, cost_step, strategy, recurrence
   if sv.contained(goal): return state_space.plan(sv), state_space
   if not sv.generate(): return None, state_space
   while time() - state_space.start_time < max_time and state_space.iterations < max_iterations:
-    if debug is not None: print 50*'-', '\n'
+    if debug is not None: print(50*'-', '\n')
 
     if strategy in [strategies.LOCAL, strategies.REVERSE]: vertices = [sv]
     elif strategy is strategies.START: vertices = [sv, state_space.root]
-    elif strategy is strategies.SEQUENCE: vertices = map(lambda s: state_space[s],
-        MacroOperator(*state_space.retrace(sv))(state_space.root.state))[::-1]
+    elif strategy is strategies.SEQUENCE: vertices = list(map(lambda s: state_space[s],
+        MacroOperator(*state_space.retrace(sv))(state_space.root.state)))[::-1]
     else: raise RuntimeError('Invalid strategy: %s'%strategy)
 
     sv = local_search(vertices, sv.h_cost)

@@ -4,7 +4,7 @@ from state_expanders import *
 # - store previous search states to avoid recomputing same structure (see IDA*)
 
 def increment(parameters):
-  return {p: v + 1 for p, v in parameters.iteritems()}
+  return {p: v + 1 for p, v in parameters.items()}
 
 def iterative_deepening(search, initial_parameters, iterate_parameters):
   parameters = initial_parameters

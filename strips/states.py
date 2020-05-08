@@ -30,6 +30,8 @@ class Literal(object):
         return not (self == other)
     def __hash__(self):
         return hash((self.__class__, self.args, self.sign))
+    def __lt__(self, other):
+        return id(self) < id(other)
     def __str__(self):
         s = self.__class__.__name__ + str_object(self.args)
         return s if self.sign else 'not {}'.format(s)

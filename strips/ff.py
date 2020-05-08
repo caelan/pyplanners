@@ -3,17 +3,17 @@ from misc.functions import argmin, flatten
 
 def get_layers(costs):
     num_layers = max(pair.level for pair in costs.values()) + 1
-    layers = [[] for level in range(num_layers)]
-    for value, (_, level) in costs.iteritems():
+    layers = [[] for _ in range(num_layers)]
+    for value, (_, level) in costs.items():
         layers[level].append(value)
     return layers
 
 # def print_rpg(literal_layers, operator_layers):
 #     for level in range(len(literal_layers)):
-#         print 'Level', level
+#         print('Level', level)
 #         if level != 0:
-#             print 'Operators', str_iterable(operator_layers[level-1])
-#         print 'Literals', str_iterable(literal_layers[level]), '\n'
+#             print('Operators', str_iterable(operator_layers[level-1]))
+#         print('Literals', str_iterable(literal_layers[level]), '\n')
 
 def extract_relaxed_plan(goal, literal_costs, operator_costs):
     #literal_layers = get_layers(literal_costs)
@@ -33,7 +33,7 @@ def extract_relaxed_plan(goal, literal_costs, operator_costs):
             easiest_operator = argmin(lambda o: operator_costs[o].cost,
                     (o for o in operator_layers[level-1] if literal in o.effects))
             #easiest_operator = argmin(lambda o: operator_costs[o].cost,
-            #        (o for o, p in operator_costs.iteritems() if p.level < level and literal in o.effects))
+            #        (o for o, p in operator_costs.items() if p.level < level and literal in o.effects))
             plan[level-1].add(easiest_operator)
             for condition in easiest_operator.conditions:
                 goals[literal_costs[condition].level].add(condition)
@@ -59,10 +59,11 @@ def none(operator_costs, relaxed_plan, relaxed_goals):
     return []
 
 def applicable(operator_costs, relaxed_plan, relaxed_goals):
-    return [o for o, (_, level) in operator_costs.iteritems() if level == 0]
+    return [o for o, (_, level) in operator_costs.items() if level == 0]
 
 def first_goals(operator_costs, relaxed_plan, relaxed_goals):
-    return [o for o, (_, level) in operator_costs.iteritems() if level == 0 and any(effect in relaxed_goals[1] for effect in o.effects)]
+    return [o for o, (_, level) in operator_costs.items()
+            if level == 0 and any(effect in relaxed_goals[1] for effect in o.effects)]
 
 def first_operators(operator_costs, relaxed_plan, relaxed_goals):
     return relaxed_plan[0]

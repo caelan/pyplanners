@@ -37,17 +37,17 @@ def connectivity_generator(vertex, cg, h_fn, ha_fn, max_time=INF, max_iterations
     if reachable:
       #h, ha = h_fn(cg), ha_fn(cg)
       #for a in ha:
-      #  print a
+      #  print(a)
       #yield h, ha
       yield h_fn(cg), ha_fn(cg)
     else:
-      print 'Not reachable'
-      print vertex.state
-      #for c, connector in cg.connectors.iteritems():
+      print('Not reachable')
+      print(vertex.state)
+      #for c, connector in cg.connectors.items():
       #  if connector.active and not connector.reachable:
-      #    print c, connector.edges
+      #    print(c, connector.edges)
       #for connector in cg.goal.connectors:
-      #  print connector, connector.reachable, connector.active
+      #  print(connector, connector.reachable, connector.active)
       #raw_input()
       yield INF if not exhausted else None, []
 

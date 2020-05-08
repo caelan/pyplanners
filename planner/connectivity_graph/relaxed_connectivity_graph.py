@@ -42,15 +42,15 @@ class RelaxedConnectivityGraph(ConnectivityGraph):
       if self.start.includes(vertex.substate):
         vertex.initial = True
 
-    #print start, '\n'
+    #print(start, '\n')
     for vertex in self.initial_vertices():
       vertex.set_reachable()
-    #print self.queue
-    #print [c for c in self.connectors.values() if c.active], '\n'
+    #print(self.queue)
+    #print([c for c in self.connectors.values() if c.active], '\n')
 
     self.goal.set_active()
-    #print self.queue
-    #print [c for c in self.connectors.values() if c.active], '\n'
+    #print(self.queue)
+    #print([c for c in self.connectors.values() if c.active], '\n')
 
     #self.graph('start.pdf', reachable=False)
     while time() - start_time <= max_time and iterations <= max_iterations and cycles <= max_cycles:
@@ -65,17 +65,17 @@ class RelaxedConnectivityGraph(ConnectivityGraph):
       if not subplanner.queued or subplanner.generation_history[self.state_uses[start]] >= max_generations: continue # NOTE - treating queued as whether it should be in the queue
       subplanner.queued = False
 
-      #print subplanner.goal_connector.active, self.is_connector_active(subplanner.goal_connector)
+      #print(subplanner.goal_connector.active, self.is_connector_active(subplanner.goal_connector))
       if UPDATE_INACTIVE: self.update_active()
       if CYCLE_INACTIVE: self.is_connector_active(subplanner.goal_connector)
       if not subplanner.goal_connector.active: continue
       iterations += 1 # Iterations of planner processing
 
-      #print subplanner.goal_connector#, [e for e in subplanner.goal_connector.edges if e.active]
+      #print(subplanner.goal_connector#, [e for e in subplanner.goal_connector.edges if e.active])
       #raw_input()
       #temp_vertices, temp_connectors, temp_edges = len(self.vertices), len(self.connectors), len(self.edges)
       subplanner()
-      #print len(self.vertices) - temp_vertices, len(self.connectors) - temp_connectors, len(self.edges) - temp_edges
+      #print(len(self.vertices) - temp_vertices, len(self.connectors) - temp_connectors, len(self.edges) - temp_edges)
 
       subplanner.generation_history[self.state_uses[start]] += 1 # NOTE - This should also be updated on the first call
       if subplanner.exhausted:
@@ -157,9 +157,9 @@ class RelaxedConnectivityGraph(ConnectivityGraph):
   #  return filter(lambda (v, e): l_fn(e) == l_fn(vertex)-1 and (v is None or l_fn(v)==l_fn(vertex)-1), vertex.sources) # TODO - fix
 
   def all_vertex_achievers(self, vertex, l_fn):
-    return filter(lambda (v, e): l_fn(e) < l_fn(vertex) and (v is None or l_fn(v) < l_fn(vertex)), vertex.sources)
+    return list(filter(lambda item: l_fn(item[1]) < l_fn(vertex) and (item[0] is None or l_fn(item[0]) < l_fn(vertex)), vertex.sources))
   def all_connector_achievers(self, connector, l_fn):
-    return filter(lambda v: l_fn(v) <= l_fn(connector), connector.vertices)
+    return list(filter(lambda v: l_fn(v) <= l_fn(connector), connector.vertices))
 
   def discounted_vertex_cost(self, vertex, l_fn, h_fn):
     if vertex in self.relaxed_plan_vertices[l_fn(vertex)]: return 0
@@ -168,7 +168,7 @@ class RelaxedConnectivityGraph(ConnectivityGraph):
     return op(min(self.discounted_vertex_cost(v, l_fn, h_fn) for v in self.all_connector_achievers(c, l_fn)) for c in edge.connectors)
 
   def easiest_edge(self, vertex, l_fn, h_fn): # TODO - factor in v when computing the cost and level
-    return argmin(lambda (v, e): self.discounted_edge_cost(e, l_fn, h_fn), self.all_vertex_achievers(vertex, l_fn))
+    return argmin(lambda item: self.discounted_edge_cost(item[1], l_fn, h_fn), self.all_vertex_achievers(vertex, l_fn))
   def easiest_vertex(self, connector, l_fn, h_fn):
     return argmin(lambda v: self.discounted_vertex_cost(v, l_fn, h_fn), self.all_connector_achievers(connector, l_fn))
 

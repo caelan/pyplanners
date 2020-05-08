@@ -1,7 +1,6 @@
 from collections import deque, namedtuple, defaultdict, Counter as CountDict, Mapping, Iterable, Iterator, Set
 from heapq import heappush, heappop, heapify
 import numpy as np
-from string import join
 import types
 
 # Old style classes don't inherit from object => type(old) != old.__class__
@@ -24,24 +23,25 @@ def str_object(obj):
   if type(obj) == tuple:
     return '(%s)' % ', '.join(str_object(item) for item in obj)
   if type(obj) == dict:
-    return '{%s}' % ', '.join(str_object(item) + ': ' +  str_object(obj[item]) \
-        for item in sorted(obj.keys(), key=lambda k: str_object(k)))
+    return '{%s}' % ', '.join(str_object(item) + ': ' +  str_object(obj[item])
+                              for item in sorted(obj.keys(), key=lambda k: str_object(k)))
   if type(obj) in (set, frozenset):
     return '{%s}' % ', '.join(sorted(str_object(item) for item in obj))
   if type(obj) in (float, np.float64):
     obj = round(obj, 3)
-    if obj == 0: obj = 0 # NOTE - catches -0.0 bug
+    if obj == 0:
+      obj = 0 # NOTE - catches -0.0 bug
     return '%.3f'%obj
   if isinstance(obj, types.FunctionType):
     return obj.__name__
   return str(obj)
 
 def str_line(*args):
-  return join([str_object(item) for item in args])
+  return ''.join(str_object(item) for item in args)
 
 def str_args(args):
-  return '(%s)' % ', '.join([str_object(item) + '=' +  str_object(args[item]) \
-      for item in sorted(args.keys(), key=lambda k: str_object(k))])
+  return '(%s)' % ', '.join(str_object(item) + '=' +  str_object(args[item])
+                            for item in sorted(args.keys(), key=lambda k: str_object(k)))
 
 def namedtuple_with_defaults(typename, field_names, default_values=[]):
   T = namedtuple(typename, field_names)
@@ -123,7 +123,8 @@ class FrozenDict(Mapping):
   def __hash__(self):
     if self._hash is None:
       self._hash = 0
-      for pair in self.iteritems(): self._hash ^= hash(pair)
+      for pair in self.items():
+        self._hash ^= hash(pair)
     return self._hash
 
 class Function(namedtuple('Function', ['fn', 'args'])):

@@ -5,7 +5,7 @@ from misc.utils import *
 
 class State(object):
   def __init__(self, values):
-    self.values = {var: value for var, value in values.iteritems() if value is not False}
+    self.values = {var: value for var, value in values.items() if value is not False}
   def __getitem__(self, var):
     if var not in self.values: return False
     return self.values[var]
@@ -21,7 +21,7 @@ class State(object):
 
 class PartialState(object):
   def cond(self):
-    return self.conditions.iteritems()
+    return self.conditions.items()
   def __contains__(self, state):
     return all(state[var] == value for var, value in self.cond())
 
