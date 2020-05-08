@@ -3,7 +3,8 @@
 from __future__ import print_function
 
 from misc.utils import *
-from planner.main import default_plan, default_scheduler_generator
+from planner.main import default_plan
+from retired.planners.main import default_scheduler_generator
 import retired.discrete.problems as problems
 import sys
 import getopt
