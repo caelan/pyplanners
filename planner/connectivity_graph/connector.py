@@ -1,8 +1,8 @@
-from utils import *
+from .utils import *
 from misc.objects import str_object
 from collections import defaultdict
 from planner.states import Substate
-from vertex import Vertex
+from .vertex import Vertex
 
 class Connector(object):
   def __init__(self, condition, rg):

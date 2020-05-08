@@ -1,5 +1,5 @@
-from hsp import *
-from operators import Axiom
+from .hsp import *
+from .operators import Axiom
 
 # TODO - Recursively linearize goals to take advantage of multiple effects
 # TODO - Use Steiner Tree heuristic/approximation algorithm

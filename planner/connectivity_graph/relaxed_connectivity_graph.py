@@ -1,6 +1,6 @@
-from connectivity_graph import *
+from .connectivity_graph import *
 from misc.utils import *
-from utils import PRUNE_INACTIVE, CYCLE_INACTIVE, UPDATE_INACTIVE
+from .utils import PRUNE_INACTIVE, CYCLE_INACTIVE, UPDATE_INACTIVE
 
 # TODO
 # - make the levels based on subproblem switches (use problem_reachable_sources). Don't count things moved by the same controller

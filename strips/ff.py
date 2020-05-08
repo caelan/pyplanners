@@ -45,7 +45,8 @@ def extract_relaxed_plan(goal, literal_costs, operator_costs):
 ###########################################################################
 
 def plan_cost(relaxed_plan, unit=False):
-    return sum(operator.cost if not unit else 1 for operator in flatten(relaxed_plan)) if relaxed_plan is not None else None
+    return sum(operator.cost if not unit else 1 for operator in flatten(relaxed_plan)) \
+        if relaxed_plan is not None else None
 
 def plan_length(relaxed_plan):
     return len(flatten(relaxed_plan)) if relaxed_plan is not None else None

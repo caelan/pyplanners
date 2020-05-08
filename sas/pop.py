@@ -1,9 +1,9 @@
 import random
-from operators import Operator
-from states import State, Goal, PartialState
+from .operators import Operator
+from .states import State, Goal, PartialState
 from heapq import heappop, heappush
 from collections import deque
-from hsp import h_add, h_max
+from .hsp import h_add, h_max
 
 class GoalConditions(PartialState):
   def __init__(self, conditions): # Difference is that this is a list

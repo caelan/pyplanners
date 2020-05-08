@@ -3,16 +3,16 @@
 from __future__ import print_function
 
 from misc.utils import *
-from misc.profiling import *
 from planner.main import default_plan, default_scheduler_generator
-import discrete.problems as problems
+import retired.discrete.problems as problems
 import sys
 import getopt
 import datetime
 
 def solve(problem_name, print_profile=False):
   dt = datetime.datetime.now()
-  directory = './simulations/discrete/planning/{}/{}/{}/'.format(problem_name, dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
+  directory = './simulations/discrete/planning/{}/{}/{}/'.format(
+      problem_name, dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
   start, goal, Scheduler = getattr(problems, problem_name)()
   generator = default_scheduler_generator(goal, Scheduler)
 

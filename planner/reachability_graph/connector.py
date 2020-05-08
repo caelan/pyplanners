@@ -1,4 +1,4 @@
-from utils import *
+from .utils import *
 from misc.objects import str_object
 
 class Connector(object):

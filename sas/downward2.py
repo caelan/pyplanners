@@ -97,9 +97,9 @@ import os
 from os.path import expanduser
 from time import time
 
-#FD_ROOT = expanduser('~/Programs/LIS/planners/FD/')
 #FD_PATH = os.path.join(FD_ROOT, 'builds/release32/bin/')
 FD_PATH = os.environ.get('FD_PATH', '')
+# TODO: warning if this path is not set
 
 SAS_PATH = 'output.sas'
 OUTPUT_PATH = 'sas_plan'
@@ -150,3 +150,63 @@ def solve_sas(problem):
   if plan is None:
     return None
   return convert_solution(plan, problem)
+
+###########################################################################
+
+class Problem(object):
+  default_val = False
+  def __init__(self, initial, goal, actions, axioms):
+    self.var_indices = {}
+    self.var_order = []
+    self.var_val_indices = {}
+    self.var_val_order = {}
+    self.axioms = axioms
+    self.mutexes = []
+    self.costs = True
+
+    self.initial = initial
+    for var, val in initial.values.items():
+      self.add_val(var, val)
+    self.goal = goal
+    for var, val in goal.conditions.items():
+      self.add_val(var, val)
+
+    self.actions = actions
+    for action in self.actions:
+      for var, val in action.conditions.items():
+        self.add_val(var, val)
+      for var, val in action.effects.items():
+        self.add_val(var, val)
+
+  def print_problem(self):
+    print(self.initial.values.keys())
+    print(len(self.initial.values))
+    print(len(self.var_order))
+    print(set(self.var_order) - set(self.initial.values.keys()))
+    for var in self.var_order:
+      print(var)
+      print(self.var_val_order[var])
+      print()
+
+  def add_var(self, var):
+    if var not in self.var_indices:
+      self.var_indices[var] = len(self.var_order)
+      self.var_order.append(var)
+      self.var_val_indices[var] = {}
+      self.var_val_order[var] = []
+      self.add_val(var, self.default_val) # NOTE - I assume a default False value
+
+  def add_val(self, var, val):
+    self.add_var(var)
+    if val not in self.var_val_indices[var]:
+      self.var_val_indices[var][val] = len(self.var_val_order[var])
+      self.var_val_order[var].append(val)
+
+  def get_var(self, var):
+    return self.var_indices[var]
+
+  def get_val(self, var, val):
+    return self.var_val_indices[var][val]
+
+  def get_var_val(self, var, val):
+    return self.get_var(var), self.get_val(var, val)

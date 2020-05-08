@@ -106,7 +106,7 @@ def write_axioms(axioms):
 
 ###########################################################################
 
-from misc.io import write, read
+from misc.io import write
 
 PATH = 'output.sas'
 

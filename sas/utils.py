@@ -1,10 +1,9 @@
 import time
 
-from set_additive import *
-from ff import *
-from set_additive import applicable as sa_applicable, first_goals as sa_first_goals, \
-  first_operators as sa_first_operators, first_combine as sa_first_combine
-from planner.main import default_plan, simple_debug
+from misc.utils import INF, randomize
+#from .set_additive import *
+from sas.downward2 import Problem
+from .ff import *
 from planner.progression import *
 
 def h_0(state, goal, operators): return 0
@@ -67,66 +66,7 @@ default_generator = lambda i, g, o: single_generator(i, g, o, default_successors
 
 ###########################################################################
 
-from downward2 import write_sas, solve_sas
-from collections import OrderedDict
-
-class Problem(object):
-  default_val = False
-  def __init__(self, initial, goal, actions, axioms):
-    self.var_indices = {}
-    self.var_order = []
-    self.var_val_indices = {}
-    self.var_val_order = {}
-    self.axioms = axioms
-    self.mutexes = []
-    self.costs = True
-
-    self.initial = initial
-    for var, val in initial.values.items():
-      self.add_val(var, val)
-    self.goal = goal
-    for var, val in goal.conditions.items():
-      self.add_val(var, val)
-
-    self.actions = actions
-    for action in self.actions:
-      for var, val in action.conditions.items():
-        self.add_val(var, val)
-      for var, val in action.effects.items():
-        self.add_val(var, val)
-
-  def print_problem(self):
-    print(self.initial.values.keys())
-    print(len(self.initial.values))
-    print(len(self.var_order))
-    print(set(self.var_order) - set(self.initial.values.keys()))
-    for var in self.var_order:
-      print(var)
-      print(self.var_val_order[var])
-      print()
-
-  def add_var(self, var):
-    if var not in self.var_indices:
-      self.var_indices[var] = len(self.var_order)
-      self.var_order.append(var)
-      self.var_val_indices[var] = {}
-      self.var_val_order[var] = []
-      self.add_val(var, self.default_val) # NOTE - I assume a default False value
-
-  def add_val(self, var, val):
-    self.add_var(var)
-    if val not in self.var_val_indices[var]:
-      self.var_val_indices[var][val] = len(self.var_val_order[var])
-      self.var_val_order[var].append(val)
-
-  def get_var(self, var):
-    return self.var_indices[var]
-
-  def get_val(self, var, val):
-    return self.var_val_indices[var][val]
-
-  def get_var_val(self, var, val):
-    return self.get_var(var), self.get_val(var, val)
+from .downward2 import solve_sas
 
 def downward_plan(initial, goal, operators):
   t0 = time.time()

@@ -1,4 +1,4 @@
-from utils import *
+from .utils import *
 from planner.operators import Operator
 from misc.utils import str_object
 

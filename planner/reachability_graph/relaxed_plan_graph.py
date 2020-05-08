@@ -1,4 +1,4 @@
-from reachability_graph import *
+from .reachability_graph import *
 from misc.utils import *
 
 # TODO

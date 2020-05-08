@@ -1,4 +1,4 @@
-from states import *
+from .states import *
 
 class Operator(PartialState):
   def __init__(self, args):

@@ -47,8 +47,8 @@ def line_stack_blocks(n=10, height=5):
         [Stack(*item) for item in permutations(blocks, 2)]
 
     initial = State({OnTable(block) for block in blocks} |
-                                {Clear(block) for block in blocks} |
-                                {ArmEmpty()})
+                    {Clear(block) for block in blocks} |
+                    {ArmEmpty()})
 
     goal = PartialState({OnTable(blocks[0]), ArmEmpty()} |
                             {On(obj, under_obj) for under_obj, obj in pairs(blocks[:height])})
@@ -66,9 +66,9 @@ def restack_blocks(n=10, height=5):
         [Stack(*item) for item in permutations(blocks, 2)]
 
     initial = State({OnTable(blocks[height-1]), ArmEmpty(), Clear(blocks[0])} |
-                                    {On(obj, under_obj) for under_obj, obj in pairs(blocks[:height][::-1])} |
-                                    {OnTable(block) for block in blocks[height:]} |
-                                    {Clear(block) for block in blocks[height:]})
+                    {On(obj, under_obj) for under_obj, obj in pairs(blocks[:height][::-1])} |
+                    {OnTable(block) for block in blocks[height:]} |
+                    {Clear(block) for block in blocks[height:]})
 
     goal = PartialState({OnTable(blocks[0]), ArmEmpty()} |
                             {On(obj, under_obj) for under_obj, obj in pairs(blocks[:height])})

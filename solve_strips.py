@@ -17,7 +17,8 @@ def solve(problem, print_profile):
     initial, goal, operators = problem()
 
     #dt = datetime.datetime.now()
-    #directory = DIRECTORY + '{}/{}/{}/'.format(problem.__name__, dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
+    #directory = DIRECTORY + '{}/{}/{}/'.format(problem.__name__,
+    # dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
     print(SEPARATOR + '\nSolving strips problem ' + problem.__name__)
 
     def execute():

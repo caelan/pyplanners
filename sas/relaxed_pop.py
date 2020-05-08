@@ -1,9 +1,4 @@
 import random
-from operators import Operator
-from states import State, Goal, PartialState
-from heapq import heappop, heappush
-from collections import deque
-from hsp import h_add
 
 def add_constraint(initial_const, constraints):
   if initial_const in constraints:

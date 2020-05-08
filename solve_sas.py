@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 from misc.profiling import *
+from misc.utils import SEPARATOR, randomize
 from sas.utils import *
 from sas.pop import pop_solve
 from sas.relaxed_pop import relaxed_pop
@@ -18,14 +19,15 @@ DIRECTORY = './simulations/sas/planning/'
 def solve(problem, print_profile):
   initial, goal, operators = problem()
   dt = datetime.datetime.now()
-  directory = DIRECTORY + '{}/{}/{}/'.format(problem.__name__, dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
+  directory = DIRECTORY + '{}/{}/{}/'.format(
+      problem.__name__, dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
   print(SEPARATOR + '\nSolving sas problem ' + problem.__name__)
 
   def execute():
     start_time = time.time()
     try:
-      #output = default_plan(initial, goal, randomize(operators))
-      output = downward_plan(initial, goal, randomize(operators))
+      output = default_plan(initial, goal, randomize(operators))
+      #output = downward_plan(initial, goal, randomize(operators))
       #output = fixed_search(initial, goal, operators, default_plan, pp_hierarchy_level)
       #output = pop_solve(initial, goal, randomize(operators), max_length=2)
       #output = relaxed_pop(initial, goal, operators)
