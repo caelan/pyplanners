@@ -20,10 +20,11 @@ class State(object):
   __repr__ = __str__
 
 class PartialState(object):
+  test = lambda state: True
   def cond(self):
     return self.conditions.items()
   def __contains__(self, state):
-    return all(state[var] == value for var, value in self.cond())
+    return all(state[var] == value for var, value in self.cond()) #and self.test(state)
 
 class Goal(PartialState):
   def __init__(self, values):

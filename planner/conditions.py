@@ -35,7 +35,8 @@ class TestCondition(Condition):
     self.variables = frozenset(variables)
     self.test = test
   def __call__(self, substate):
-    return all(var in substate for var in self.variables) and self.test({var: substate[var] for var in self.variables})
+    return all(var in substate for var in self.variables) \
+           and self.test({var: substate[var] for var in self.variables})
 
 class AllCondition(Condition):
   variables = frozenset()

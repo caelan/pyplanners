@@ -25,7 +25,8 @@ def a_star_search(start, goal, generator, priority, stack=False,
   if not sv.generate():
     return None, state_space
   queue = (FILOClassicPriorityQueue if stack else FIFOClassicPriorityQueue)([(priority(sv), sv)])
-  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) and (state_space.iterations < max_iterations):
+  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
+          and (state_space.iterations < max_iterations):
     cv = queue.pop()
     state_space.iterations += 1
     if debug is not None:
@@ -52,7 +53,8 @@ def best_first_search(start, goal, generator, priority, stack=False,
   if not sv.generate():
     return None, state_space
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(priority(sv), sv)])
-  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) and (state_space.iterations < max_iterations):
+  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
+          and (state_space.iterations < max_iterations):
     cv = queue.pop()
     state_space.iterations += 1
     if debug is not None:
@@ -75,7 +77,8 @@ def deferred_best_first_search(start, goal, generator, priority, stack=False,
   if sv.contained(goal):
     return state_space.plan(sv), state_space
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(None, sv)])
-  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) and (state_space.iterations < max_iterations):
+  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
+          and (state_space.iterations < max_iterations):
     cv = queue.pop()
     if not cv.generate():
       continue
@@ -98,20 +101,26 @@ def macro_greedy_cost_fn(v):
     return v.h_cost
   return v.parent_edge.source.h_cost - len(v.parent_edge.operator)
 
-def macro_deferred_best_first_search(start, goal, generator, priority, stack, max_time, max_iterations, max_generations, max_cost, max_length, debug):
+def macro_deferred_best_first_search(start, goal, generator, priority, stack, max_time, max_iterations,
+                                     max_generations, max_cost, max_length, debug):
   state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
   sv = state_space.root
-  if sv.contained(goal): return state_space.plan(sv), state_space
+  if sv.contained(goal):
+    return state_space.plan(sv), state_space
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(None, sv)])
-  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) and (state_space.iterations < max_iterations):
+  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
+          and (state_space.iterations < max_iterations):
     cv = queue.pop()
-    if not cv.generate(): continue
+    if not cv.generate():
+      continue
     state_space.iterations += 1
-    if debug is not None: debug(cv)
+    if debug is not None:
+      debug(cv)
 
     successors = list(cv.unexplored()) + [cv]
     gv = first(lambda v: v.contained(goal), successors[:-1])
-    if gv is not None: return state_space.plan(gv), state_space
+    if gv is not None:
+      return state_space.plan(gv), state_space
     for v in (reversed(successors) if stack else successors):
       queue.push(priority(v), v)
   return None, state_space
@@ -119,12 +128,15 @@ def macro_deferred_best_first_search(start, goal, generator, priority, stack, ma
 ###########################################################################
 
 # TODO - variants that don't add states to the search queue until parent revisited
-def semideferred_best_first_search(start, goal, generator, priority, stack, max_time, max_iterations, max_generations, max_cost, max_length, debug):
+def semideferred_best_first_search(start, goal, generator, priority, stack, max_time, max_iterations,
+                                   max_generations, max_cost, max_length, debug):
   state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
   sv = state_space.root
-  if sv.contained(goal): return state_space.plan(sv), state_space
+  if sv.contained(goal):
+    return state_space.plan(sv), state_space
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(None, sv)])
-  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) and (state_space.iterations < max_iterations):
+  while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
+          and (state_space.iterations < max_iterations):
     cv = queue.pop()
     if not cv.has_unexplored() and not cv.generate(): continue
     state_space.iterations += 1
@@ -132,8 +144,10 @@ def semideferred_best_first_search(start, goal, generator, priority, stack, max_
 
     successors = list(cv.unexplored()) + [cv]
     gv = first(lambda v: v.contained(goal), successors[:-1])
-    if gv is not None: return state_space.plan(gv), state_space
-    if stack: successors.reverse()
+    if gv is not None:
+      return state_space.plan(gv), state_space
+    if stack:
+      successors.reverse()
     for i, v in enumerate(successors):
       if v.generate():
         queue.push(priority(v), v)

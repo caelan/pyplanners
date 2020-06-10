@@ -63,7 +63,7 @@ class Vertex(object):
     #return self.state in partial_state
     return self.derived_state in partial_state
   def generate(self):
-    if self.generator is not None and self.generations < self.state_space.max_generations:
+    if (self.generator is not None) and (self.generations < self.state_space.max_generations):
       try:
         self.h_cost, operators = next(self.generator)
         self.generations += 1

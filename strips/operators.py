@@ -12,7 +12,7 @@ class Operator(object):
         self.effects = None
         self.test = lambda state: True
     def applicable(self, state):
-        return all(literal in state for literal in self.conditions) and self.test(state)
+        return all(literal in state for literal in self.conditions) #and self.test(state)
     __contains__ = applicable
     def apply(self, state):
         # TODO: cancelation semantics
