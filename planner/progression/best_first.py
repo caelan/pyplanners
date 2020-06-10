@@ -55,8 +55,8 @@ def best_first_search(start, goal, generator, priority, stack=False,
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(priority(sv), sv)])
   while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
           and (state_space.iterations < max_iterations):
-    cv = queue.pop()
     state_space.iterations += 1
+    cv = queue.pop()
     if debug is not None:
       debug(cv)
 
@@ -69,6 +69,14 @@ def best_first_search(start, goal, generator, priority, stack=False,
         queue.push(priority(v), v)
   return None, state_space
 
+def check_test(vertex):
+  if vertex.parent_edge is None:
+    return True
+  parent_state = vertex.parent_edge.source.state
+  parent_op = vertex.parent_edge.operator
+  # TODO: invalidate this vertex & edge if fails
+  return parent_op.test(parent_state) # TODO: hasattr
+
 def deferred_best_first_search(start, goal, generator, priority, stack=False,
                                max_time=INF, max_iterations=INF, max_generations=INF,
                                max_cost=INF, max_length=INF, debug=None):
@@ -79,17 +87,17 @@ def deferred_best_first_search(start, goal, generator, priority, stack=False,
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(None, sv)])
   while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
           and (state_space.iterations < max_iterations):
+    state_space.iterations += 1
     cv = queue.pop()
     if not cv.generate():
       continue
-    state_space.iterations += 1
+    if not check_test(cv):
+      continue
+    if cv.contained(goal):
+      return state_space.plan(cv), state_space
     if debug is not None:
       debug(cv)
-
     successors = list(cv.unexplored()) + [cv]
-    gv = first(lambda v: v.contained(goal), successors[:-1])
-    if gv is not None:
-      return state_space.plan(gv), state_space
     for v in (reversed(successors) if stack else successors):
       queue.push(priority(cv), v)
   return None, state_space
@@ -138,9 +146,11 @@ def semideferred_best_first_search(start, goal, generator, priority, stack, max_
   while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
           and (state_space.iterations < max_iterations):
     cv = queue.pop()
-    if not cv.has_unexplored() and not cv.generate(): continue
+    if not cv.has_unexplored() and not cv.generate():
+      continue
     state_space.iterations += 1
-    if debug is not None: debug(cv)
+    if debug is not None:
+      debug(cv)
 
     successors = list(cv.unexplored()) + [cv]
     gv = first(lambda v: v.contained(goal), successors[:-1])

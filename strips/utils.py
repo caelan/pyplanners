@@ -51,12 +51,13 @@ def single_generator(initial, goal, operators, successors):
 
 def filter_axioms_generator(goal, operators, axioms, successors):
     def generator(vertex):
+        #helpful_actions = operators
         #heuristic, helpful_actions = successors(vertex.state, goal, operators + axioms)
         heuristic, helpful_actions = successors(vertex.derived_state, goal, operators + axioms)
-        #yield heuristic, helpful_actions
-        #yield heuristic, operators
-        yield heuristic, filter_axioms(helpful_actions) # NOTE - the first_actions should be anything applicable in derived_state
-        #yield heuristic, filter(lambda op: op not in axioms, helpful_actions)
+        #helpful_actions = list(filter(lambda op: op not in axioms, helpful_actions))
+        helpful_actions = filter_axioms(helpful_actions)
+        # NOTE - the first_actions should be anything applicable in derived_state
+        yield heuristic, helpful_actions
     return generator, axioms
 
 default_generator = lambda i, g, o: single_generator(i, g, o, default_successors)
@@ -76,8 +77,9 @@ greedy = weighted(INF)
 
 # TODO: # stack=True vs False can matter quite a bit
 #default_search = lambda initial, goal, generator: a_star_search(initial, goal, generator, astar, stack=True)
-default_search = lambda initial, goal, generator: best_first_search(initial, goal, generator, greedy, stack=True)
-#default_search = lambda initial, goal, generator: deferred_best_first_search(initial, goal, generator, greedy, stack=True)
+#default_search = lambda initial, goal, generator: best_first_search(initial, goal, generator, greedy, stack=True)
+default_search = lambda initial, goal, generator: deferred_best_first_search(
+    initial, goal, generator, greedy, stack=False)
 
 def default_plan(initial, goal, operators):
     return default_search(initial, goal, default_generator(initial, goal, operators))

@@ -98,7 +98,7 @@ class Edge(object):
       sink.length = source.length + len(operator)
       sink.parent_edge = self
   def __str__(self):
-    return self.__class__.__name__
+    return '{}({})'.format(self.__class__.__name__, self.operator)
   __repr__ = __str__
 
 #################################################################
