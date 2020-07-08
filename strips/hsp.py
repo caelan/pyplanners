@@ -28,7 +28,8 @@ def compute_costs(state, goal, operators, op=max, unit=False):
         # literal_level = operator_level + (1 if not operator.is_axiom() else 0)
         for effect in operator.effects:
             # Only computes costs for relevant operators
-            if (effect in unprocessed) and (effect not in literal_costs or (literal_cost < literal_costs[effect].cost)):
+            if (effect in unprocessed) and (effect not in literal_costs or
+                                            (literal_cost < literal_costs[effect].cost)):
                 literal_costs[effect] = Pair(literal_cost, literal_level)
                 heappush(queue, (literal_cost, effect))
         return False

@@ -10,7 +10,7 @@ class State(object):
     if var not in self.values: return False
     return self.values[var]
   def __eq__(self, other):
-    return type(self) == type(other) and self.values == other.values
+    return (type(self) == type(other)) and (self.values == other.values)
   def __ne__(self, other):
     return not self == other
   def __hash__(self):
@@ -20,7 +20,6 @@ class State(object):
   __repr__ = __str__
 
 class PartialState(object):
-  test = lambda state: True
   def cond(self):
     return self.conditions.items()
   def __contains__(self, state):
@@ -30,7 +29,7 @@ class Goal(PartialState):
   def __init__(self, values):
     self.conditions = values
   def __eq__(self, other):
-    return type(self) == type(other) and self.conditions == other.conditions
+    return (type(self) == type(other)) and (self.conditions == other.conditions)
   def __ne__(self, other):
     return not self == other
   def __hash__(self):

@@ -6,12 +6,39 @@ from misc.priority_queue import FIFOClassicPriorityQueue, FILOClassicPriorityQue
 # TODO - Update the shortest path using Bellman-Ford if find shorter path to previously visited state
 # NOTE - Best first searches with infinite branching factors are not complete. Need to use iterative deepening on max_expansions and max_length
 
+def weighted(weight):
+    if weight == INF:
+        return lambda v: (v.h_cost, v.cost)
+    return lambda v: (v.cost + weight * v.h_cost)
+
+uniform = weighted(0)
+astar = weighted(1)
+wastar2 = weighted(2)
+wastar3 = weighted(2)
+greedy = weighted(INF)
+
+###########################################################################
+
+# TODO: deprecate
+
 def path_cost_fn(v):
   return v.cost
 def greedy_cost_fn(v):
   return v.h_cost
-def weighted_cost_fn(weight):
-  return lambda v: (1-weight)*v.cost + weight*v.h_cost
+def weighted_cost_fn(alpha):
+  return lambda v: (1 - alpha) * v.cost + alpha * v.h_cost
+
+###########################################################################
+
+def check_test(vertex):
+  if vertex.parent_edge is None:
+    return True
+  parent_state = vertex.parent_edge.source.state
+  parent_op = vertex.parent_edge.operator
+  valid = parent_op.test(parent_state) # TODO: hasattr
+  if not valid:
+    vertex.disconnect()
+  return valid
 
 ###########################################################################
 
@@ -33,7 +60,6 @@ def a_star_search(start, goal, generator, priority, stack=False,
       debug(cv)
     if cv.contained(goal):
       return state_space.plan(cv), state_space
-
     while cv.generate():
       pass # NOTE - A* is not optimal even for an admissible heuristic if you allow re-expansion of branches
     if cv.h_cost is None:
@@ -43,63 +69,53 @@ def a_star_search(start, goal, generator, priority, stack=False,
         queue.decrease_key(priority(v), v)
   return None, state_space
 
-def best_first_search(start, goal, generator, priority, stack=False,
+def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
                       max_time=INF, max_iterations=INF, max_generations=INF,
                       max_cost=INF, max_length=INF, debug=None):
   state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
   sv = state_space.root
-  if sv.contained(goal):
-    return state_space.plan(sv), state_space
-  if not sv.generate():
-    return None, state_space
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(priority(sv), sv)])
   while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
           and (state_space.iterations < max_iterations):
     state_space.iterations += 1
     cv = queue.pop()
+    if lazy and not check_test(cv):
+      continue
     if debug is not None:
       debug(cv)
-
-    successors = list(cv.unexplored()) + [cv]
-    gv = first(lambda v: v.contained(goal), successors[:-1])
-    if gv is not None:
-      return state_space.plan(gv), state_space
+    if cv.contained(goal):
+      return state_space.plan(cv), state_space
+    successors = list(cv.unexplored())
+    if not cv.enumerated():
+      successors.append(cv)
     for v in (reversed(successors) if stack else successors):
-      if v.generate():
+      v.generate() # Also evaluates the h_cost
+      if not lazy or check_test(cv):
         queue.push(priority(v), v)
   return None, state_space
-
-def check_test(vertex):
-  if vertex.parent_edge is None:
-    return True
-  parent_state = vertex.parent_edge.source.state
-  parent_op = vertex.parent_edge.operator
-  # TODO: invalidate this vertex & edge if fails
-  return parent_op.test(parent_state) # TODO: hasattr
 
 def deferred_best_first_search(start, goal, generator, priority, stack=False,
                                max_time=INF, max_iterations=INF, max_generations=INF,
                                max_cost=INF, max_length=INF, debug=None):
   state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
-  sv = state_space.root
-  if sv.contained(goal):
-    return state_space.plan(sv), state_space
-  queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(None, sv)])
+  queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(INF, state_space.root)])
   while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
           and (state_space.iterations < max_iterations):
     state_space.iterations += 1
     cv = queue.pop()
-    if not cv.generate():
-      continue
     if not check_test(cv):
       continue
-    if cv.contained(goal):
-      return state_space.plan(cv), state_space
     if debug is not None:
       debug(cv)
-    successors = list(cv.unexplored()) + [cv]
+    if cv.contained(goal):
+      return state_space.plan(cv), state_space
+    cv.generate()
+    h = priority(cv)
+    successors = list(cv.unexplored())
+    if not cv.enumerated():
+      successors.append(cv) # TODO: use its prior value
     for v in (reversed(successors) if stack else successors):
-      queue.push(priority(cv), v)
+      queue.push(h, v) # TODO: combine with the action cost
   return None, state_space
 
 ###########################################################################
@@ -124,7 +140,6 @@ def macro_deferred_best_first_search(start, goal, generator, priority, stack, ma
     state_space.iterations += 1
     if debug is not None:
       debug(cv)
-
     successors = list(cv.unexplored()) + [cv]
     gv = first(lambda v: v.contained(goal), successors[:-1])
     if gv is not None:
@@ -151,7 +166,6 @@ def semideferred_best_first_search(start, goal, generator, priority, stack, max_
     state_space.iterations += 1
     if debug is not None:
       debug(cv)
-
     successors = list(cv.unexplored()) + [cv]
     gv = first(lambda v: v.contained(goal), successors[:-1])
     if gv is not None:

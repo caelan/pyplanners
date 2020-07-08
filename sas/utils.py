@@ -3,8 +3,8 @@ import time
 from misc.utils import INF, randomize
 #from .set_additive import *
 from sas.downward import Problem
-from .ff import *
-from planner.progression import *
+from .ff import filter_axioms, in_add, ff_fn, plan_cost, first_combine
+from planner.progression import deferred_best_first_search
 
 def h_0(state, goal, operators):
   return 0
@@ -79,6 +79,7 @@ default_generator = lambda i, g, o: single_generator(i, g, o, default_successors
 from .downward import solve_sas
 
 def downward_plan(initial, goal, operators):
+  # TODO: relax effects and perform a lazy greedy search
   t0 = time.time()
   problem = Problem(initial, goal, operators, [])
   return solve_sas(problem), time.time() - t0

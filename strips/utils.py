@@ -1,7 +1,7 @@
-from .ff import ff_fn, plan_cost, first_goals
-from misc.numerical import INF
+from strips.ff import ff_fn, plan_cost, first_goals
 from misc.functions import in_add
-from planner.progression.best_first import a_star_search, best_first_search, deferred_best_first_search
+from planner.progression.best_first import best_first_search, greedy
+
 
 def h_0(state, goal, operators):
     return 0
@@ -33,12 +33,17 @@ def ha_combine(state, goal, operators, *helpful_actions):
 
 ###########################################################################
 
-# TODO: custom heuristic
-
-def combine(heuristic, helpful_actions):
+def pair_h_and_ha(heuristic, helpful_actions):
     return lambda s, g, o: (heuristic(s, g, o), helpful_actions(s, g, o))
 
-#default_successors = combine(h_add, ha_applicable)
+def combine_heuristics(*heuristics):
+    return lambda s, g, o: tuple(h(s, g, o) for h in heuristics)
+
+def combine_helpfuls(*helpfuls):
+    return lambda s, g, o: [a for ha in helpfuls for a in ha(s, g, o)]
+
+#default_successors = pair_h_and_ha(h_add, ha_applicable)
+#default_successors = pair_h_and_ha(h_ff_add, ha_applicable)
 default_successors = ff_fn(plan_cost, first_goals, op=sum)
 
 ###########################################################################
@@ -64,24 +69,13 @@ default_generator = lambda i, g, o: single_generator(i, g, o, default_successors
 
 ###########################################################################
 
-def weighted(w):
-    if w == INF:
-        return lambda v: v.h_cost
-    return lambda v: (v.cost + w*v.h_cost)
-
-uniform = weighted(0)
-astar = weighted(1)
-greedy = weighted(INF)
-
-###########################################################################
-
-# TODO: # stack=True vs False can matter quite a bit
 #default_search = lambda initial, goal, generator: a_star_search(initial, goal, generator, astar, stack=True)
 #default_search = lambda initial, goal, generator: best_first_search(initial, goal, generator, greedy, stack=True)
-default_search = lambda initial, goal, generator: deferred_best_first_search(
-    initial, goal, generator, greedy, stack=False)
+default_search = lambda initial, goal, generator: best_first_search(
+    initial, goal, generator, greedy, stack=False, lazy=True) # stack=True vs False can matter quite a bit
 
 def default_plan(initial, goal, operators):
+    # TODO: deprecate
     return default_search(initial, goal, default_generator(initial, goal, operators))
 
 def default_derived_plan(initial, goal, operators, axioms):

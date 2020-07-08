@@ -38,7 +38,7 @@ class Plan(object):
   def __str__(self):
     s = '{name} | Cost: {self.cost} | Length {self.length}'.format(name=self.__class__.__name__, self=self)
     for i, operator in enumerate(self.operators):
-      s += str_line('\n\n%d |'%(i+1), operator)
+      s += str_line('\n\n%d | '%(i+1), operator)
     return s
   __repr__ = __str__
 
@@ -62,8 +62,10 @@ class Vertex(object):
   def contained(self, partial_state):
     #return self.state in partial_state
     return self.derived_state in partial_state
+  def enumerated(self):
+    return (self.generator is None) or (self.state_space.max_generations <= self.generations)
   def generate(self):
-    if (self.generator is not None) and (self.generations < self.state_space.max_generations):
+    if not self.enumerated():
       try:
         self.h_cost, operators = next(self.generator)
         self.generations += 1
@@ -73,17 +75,21 @@ class Vertex(object):
           return True # TODO - decide if to return true if still some unexplored (despite nothing new generated)
       except StopIteration:
         self.generator = None
-    return False
+    return False # TODO: change the semantics of this to be generated at least one new
   def has_unexplored(self):
     return self.explored < len(self.outgoing_edges)
   def unexplored(self):
     while self.has_unexplored():
       self.explored += 1
       yield self.outgoing_edges[self.explored-1].sink
+  def disconnect(self):
+    assert self.parent_edge is not None
+    self.state_space.pop(self.state)
+    self.state_space.edges.remove(self.parent_edge)
   def __str__(self):
     return 'h_cost: {self.h_cost} | cost: {self.cost} | length: {self.length} | ' \
-           'generations: {self.generations} | unexplored: {unexplored}\n{self.state}'.format(self=self,
-                unexplored=(len(self.outgoing_edges)-self.explored))
+           'generations: {self.generations} | unexplored: {unexplored}\n{self.state}'.format(
+      self=self, unexplored=(len(self.outgoing_edges)-self.explored))
   __repr__ = __str__
 
 class Edge(object):
@@ -113,6 +119,7 @@ class StateSpace(object):
       self.generator_fn, self.axioms = generator_fn
     else:
       self.generator_fn, self.axioms = generator_fn, []
+    # TODO: could check whether these are violated generically
     self.max_extensions = max_extensions
     self.max_generations = max_generations
     self.max_cost = max_cost
@@ -132,7 +139,7 @@ class StateSpace(object):
   def __len__(self):
     return len(self.vertices)
   def extend(self, vertex, operator):
-    if vertex.cost + operator.cost <= self.max_cost and vertex.length + len(operator) <= self.max_length:
+    if (vertex.cost + operator.cost <= self.max_cost) and (vertex.length + len(operator) <= self.max_length):
       #if vertex.state in operator:
       if vertex.contained(operator):
         if self.axioms:
@@ -140,7 +147,7 @@ class StateSpace(object):
           sink_state = operator.apply(vertex.state) # TODO - this won't work for MacroOperators yet?
         else:
           sink_state = operator(vertex.state)[-1] if isinstance(operator, MacroOperator) else operator(vertex.state)
-        if sink_state is not None and self[sink_state].extensions < self.max_extensions:
+        if (sink_state is not None) and (self[sink_state].extensions < self.max_extensions):
           sink_vertex = self[sink_state]
           self.edges.append(Edge(vertex, sink_vertex, operator))
           sink_vertex.extensions += 1
@@ -148,13 +155,16 @@ class StateSpace(object):
     return None
   def retrace(self, vertex):
     if vertex is not None:
-      if vertex == self.root: return []
+      if vertex == self.root:
+        return []
       sequence = self.retrace(vertex.parent_edge.source)
-      if sequence is not None: return sequence + list(vertex.parent_edge.operator)
+      if sequence is not None:
+        return sequence + list(vertex.parent_edge.operator)
     return None
   def plan(self, vertex):
     sequence = self.retrace(vertex)
-    if sequence is None: return None
+    if sequence is None:
+      return None
     return Plan(self.root.state, sequence)
   def time_elapsed(self):
     return elapsed_time(self.start_time)
@@ -163,8 +173,8 @@ class StateSpace(object):
   def num_generations(self):
     return sum(v.generations for v in self) # NOTE - can be very expensive for a large state space
   def __repr__(self):
-    return 'Iterations: {iterations} | Time: {time} | State Space: {state_space}\n'.format(iterations=self.iterations,
-          time=round(self.time_elapsed(), 3), state_space=len(self))
+    return 'Iterations: {iterations} | Time: {time} | State Space: {state_space}\n'.format(
+      iterations=self.iterations, time=round(self.time_elapsed(), 3), state_space=len(self))
   #def __repr__(self):
   #  return 'Iterations: {iterations} | Time: {time} | State Space: {state_space} | Expanded: {expanded} | ' \
   #        'Generations: {generations}\n'.format(iterations=self.iterations,

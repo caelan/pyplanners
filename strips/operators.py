@@ -15,7 +15,7 @@ class Operator(object):
         return all(literal in state for literal in self.conditions) #and self.test(state)
     __contains__ = applicable
     def apply(self, state):
-        # TODO: cancelation semantics
+        # TODO: cancellation semantics
         return State({atom for atom in state.atoms if atom.negate() not in self.effects} |
                      {literal for literal in self.effects if not literal.negated})
     def __call__(self, state):
@@ -27,7 +27,7 @@ class Operator(object):
     def __len__(self):
         return 1
     def __eq__(self, other):
-        return type(self) == type(other) and (self._frozen_args == other._frozen_args)
+        return (type(self) == type(other)) and (self._frozen_args == other._frozen_args)
     def __ne__(self, other):
         return not (self == other)
     def __hash__(self):

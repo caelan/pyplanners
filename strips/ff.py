@@ -29,7 +29,8 @@ def extract_relaxed_plan(goal, literal_costs, operator_costs):
 
     for level in reversed(range(1, num_goal_layers)):
         for literal in goals[level]:
-            if literal in marked[level]: continue
+            if literal in marked[level]:
+                continue
             easiest_operator = argmin(lambda o: operator_costs[o].cost,
                     (o for o in operator_layers[level-1] if literal in o.effects))
             #easiest_operator = argmin(lambda o: operator_costs[o].cost,
@@ -49,12 +50,14 @@ def plan_cost(relaxed_plan, unit=False):
         if relaxed_plan is not None else None
 
 def plan_length(relaxed_plan):
-    return len(flatten(relaxed_plan)) if relaxed_plan is not None else None
+    return len(flatten(relaxed_plan)) if (relaxed_plan is not None) else None
 
 def multi_cost(goal, operator_costs, relaxed_plan, relaxed_goals):
     return plan_cost(relaxed_plan), operator_costs[goal].cost, operator_costs[goal].level
 
 ###########################################################################
+
+# TODO: use FF or FD software for heuristics
 
 def none(operator_costs, relaxed_plan, relaxed_goals):
     return []
@@ -62,18 +65,30 @@ def none(operator_costs, relaxed_plan, relaxed_goals):
 def applicable(operator_costs, relaxed_plan, relaxed_goals):
     return [o for o, (_, level) in operator_costs.items() if level == 0]
 
+def backpointers(operator_costs, relaxed_plan, relaxed_goals):
+    # Retrace actions without using extract_relaxed_plan
+    # Could also do h_max and h_add versions
+    raise NotImplementedError()
+
 def first_goals(operator_costs, relaxed_plan, relaxed_goals):
+    if len(relaxed_goals) <= 1:
+        return []
     return [o for o, (_, level) in operator_costs.items()
-            if level == 0 and any(effect in relaxed_goals[1] for effect in o.effects)]
+            if (level == 0) and any(effect in relaxed_goals[1] for effect in o.effects)]
 
 def first_operators(operator_costs, relaxed_plan, relaxed_goals):
+    if not relaxed_plan:
+        return []
     return relaxed_plan[0]
+
+# TODO: prioritize helpful actions
 
 ###########################################################################
 
 def ff(state, goal, operators, heuristic, helpful_actions, op=max, unit=False):
     literal_costs, operator_costs = compute_costs(state, goal, operators, op=op, unit=unit)
-    if goal not in operator_costs: return None, []
+    if goal not in operator_costs:
+        return None, []
     relaxed_plan, relaxed_goals = extract_relaxed_plan(goal, literal_costs, operator_costs)
     return heuristic(relaxed_plan), helpful_actions(operator_costs, relaxed_plan, relaxed_goals)
 
@@ -82,8 +97,8 @@ def ff_fn(heuristic, helpful_actions, op=max, unit=False):
 
 ###########################################################################
 
-def h_ff_max(state, goal, operators):
-    return ff(state, goal, operators, plan_cost, none, op=max)[0]
+def h_ff_max(*args):
+    return ff_fn(plan_cost, none, op=max)(*args)[0]
 
-def h_ff_add(state, goal, operators):
-    return ff(state, goal, operators, plan_cost, none, op=sum)[0]
+def h_ff_add(*args):
+    return ff_fn(plan_cost, none, op=sum)(*args)[0]
