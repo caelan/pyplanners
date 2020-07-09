@@ -36,8 +36,6 @@ class Operator(PartialState):
 
 class Action(Operator):
   cost = 1
-class Inference(Operator):
-  cost = 0
 class Axiom(Operator):
   cost = 0
 

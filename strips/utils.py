@@ -1,24 +1,32 @@
-from strips.ff import ff_fn, plan_cost, first_goals
-from misc.functions import in_add
-from planner.progression.best_first import best_first_search, greedy
+from strips.ff import ff_fn, plan_cost, first_goals, h_ff_add, first_operators
+from strips.hsp import h_add, h_max
+from misc.functions import in_add, INF
+from planner.progression.best_first import best_first_search, deferred_best_first_search, \
+    uniform, astar, wastar2, wastar3, greedy
 
 
-def h_0(state, goal, operators):
-    return 0
-def h_naive(state, goal, operators):
-    return sum(1 for literal in goal.conditions if literal not in state)
 def h_blind(state, goal, operators):
-    return min(operator.cost for operator in ha_applicable(state, goal, operators))
+    return 0
+
+def h_goal(state, goal, operators):
+    return sum(1 for literal in goal.conditions if literal not in state)
+
+def h_action(state, goal, operators):
+    if state in goal:
+        return 0
+    applicable = ha_applicable(state, goal, operators)
+    if not applicable:
+        return INF
+    return min(operator.cost for operator in applicable)
 
 ###########################################################################
 
-def filter_axioms(operators):
-    return list(filter(lambda o: not o.is_axiom(), operators))
-
 def ha_all(state, goal, operators):
     return operators
+
 def ha_applicable(state, goal, operators):
     return [operator for operator in operators if operator(state) is not None]
+
 def ha_sorted(state, goal, operators):
     return sorted(ha_applicable(state, goal, operators), key=lambda o: o.cost)
 
@@ -42,42 +50,89 @@ def combine_heuristics(*heuristics):
 def combine_helpfuls(*helpfuls):
     return lambda s, g, o: [a for ha in helpfuls for a in ha(s, g, o)]
 
-#default_successors = pair_h_and_ha(h_add, ha_applicable)
-#default_successors = pair_h_and_ha(h_ff_add, ha_applicable)
-default_successors = ff_fn(plan_cost, first_goals, op=sum)
-
 ###########################################################################
 
-def single_generator(initial, goal, operators, successors):
+def single_generator(goal, operators, axioms, successors):
+    #return lambda v: (yield successors(v.state, goal, operators))
     def generator(vertex):
-        yield successors(vertex.state, goal, operators)
-    return generator
-    #return = lambda v: (yield successors(v.state, goal, operators))
-
-def filter_axioms_generator(goal, operators, axioms, successors):
-    def generator(vertex):
-        #helpful_actions = operators
-        #heuristic, helpful_actions = successors(vertex.state, goal, operators + axioms)
         heuristic, helpful_actions = successors(vertex.derived_state, goal, operators + axioms)
         #helpful_actions = list(filter(lambda op: op not in axioms, helpful_actions))
-        helpful_actions = filter_axioms(helpful_actions)
+        helpful_actions = list(filter(lambda o: not o.is_axiom(), helpful_actions))
         # NOTE - the first_actions should be anything applicable in derived_state
         yield heuristic, helpful_actions
     return generator, axioms
 
-default_generator = lambda i, g, o: single_generator(i, g, o, default_successors)
+###########################################################################
+
+SEARCHES = {
+    #'astar': best_first_search,
+    'eager': best_first_search,
+    'lazy': deferred_best_first_search,
+}
+
+# TODO: populate programmatically
+EVALUATORS = {
+    'dijkstra': uniform,
+    'astar': astar,
+    'wastar2': wastar2,
+    'wastar3': wastar3,
+    'greedy': greedy,
+}
+
+HEURISTICS = {
+    'blind': h_blind,
+    'goal': h_goal,
+    'max': h_max,
+    'add': h_add,
+    'ff': h_ff_add,
+}
+
+SUCCESSORS = {
+    'all': ha_applicable,
+    #'ff': first_goals, # first_operators # TODO: make a wrapper
+}
 
 ###########################################################################
+
+def lookup_heuristic(heuristic):
+    if callable(heuristic):
+        return heuristic
+    if heuristic not in HEURISTICS:
+        raise RuntimeError('Unknown heuristic: {}'.format(heuristic))
+    return HEURISTICS[heuristic]
+
+def solve_strips(initial, goal, operators, axioms=[], search='eager', evaluator='greedy',
+                 heuristic='ff', successor='ff', **kwargs):
+    search_fn = SEARCHES[search]
+    evaluator_fn = EVALUATORS[evaluator]
+    if heuristic == successor == 'ff':
+        combined_fn = ff_fn(plan_cost, first_goals, op=sum)
+    else:
+        if isinstance(heuristic, str):
+            heuristic_fn = lookup_heuristic(HEURISTICS[heuristic])
+        else:
+            heuristic_fn = combine_heuristics(*map(lookup_heuristic, heuristic))
+        if isinstance(successor, str):
+            successor_fn = SUCCESSORS[successor]
+        else:
+            successor_fn = combine_helpfuls(*successor)
+        combined_fn = pair_h_and_ha(heuristic_fn, successor_fn)
+    generator_fn = single_generator(goal, operators, axioms, combined_fn)
+    return search_fn(initial, goal, generator_fn, evaluator_fn, **kwargs)
+
+###########################################################################
+
+#default_successors = pair_h_and_ha(h_add, ha_applicable)
+#default_successors = pair_h_and_ha(h_ff_add, ha_applicable)
+default_successors = ff_fn(plan_cost, first_goals, op=sum)
 
 #default_search = lambda initial, goal, generator: a_star_search(initial, goal, generator, astar, stack=True)
 #default_search = lambda initial, goal, generator: best_first_search(initial, goal, generator, greedy, stack=True)
 default_search = lambda initial, goal, generator: best_first_search(
     initial, goal, generator, greedy, stack=False, lazy=True) # stack=True vs False can matter quite a bit
 
-def default_plan(initial, goal, operators):
-    # TODO: deprecate
-    return default_search(initial, goal, default_generator(initial, goal, operators))
+def default_plan(initial, goal, operators, axioms=[]):
+    #return default_search(initial, goal, single_generator(goal, operators, axioms, default_successors))
+    return solve_strips(initial, goal, operators, axioms=axioms)
 
-def default_derived_plan(initial, goal, operators, axioms):
-    #return default_search(initial, goal, (lambda v: iter([default_successors(v.state, goal, operators + axioms)]), axioms))
-    return default_search(initial, goal, filter_axioms_generator(goal, operators, axioms, default_successors))
+default_derived_plan = default_plan

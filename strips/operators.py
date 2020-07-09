@@ -2,6 +2,7 @@ from .states import State
 from misc.objects import str_object
 
 class Operator(object):
+    cost = None
     def __init__(self, args):
         for k, v in args.items():
             setattr(self, k, v)
@@ -18,6 +19,8 @@ class Operator(object):
         # TODO: cancellation semantics
         return State({atom for atom in state.atoms if atom.negate() not in self.effects} |
                      {literal for literal in self.effects if not literal.negated})
+    def dump(self):
+        print('{}\npre: {}\neff: {}\ncost: {}'.format(self, self.conditions, self.effects, self.cost))
     def __call__(self, state):
         return self.apply(state) if self.applicable(state) else None
     def is_axiom(self):
@@ -41,6 +44,4 @@ class Operator(object):
 class Action(Operator): 
     cost = 1
 class Axiom(Operator): 
-    cost = 0
-class Inference(Operator): 
     cost = 0
