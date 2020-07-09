@@ -74,6 +74,9 @@ def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
                       max_cost=INF, max_length=INF, debug=None):
   state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
   sv = state_space.root
+  sv.generate()
+  if sv.h_cost == INF:
+    return None, state_space
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(priority(sv), sv)])
   while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
           and (state_space.iterations < max_iterations):

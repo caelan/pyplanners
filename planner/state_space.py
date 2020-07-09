@@ -27,14 +27,16 @@ class Plan(object):
     return states
   def get_derived_states(self, axioms):
     states = [self.start]
-    derived_states = [derive_predicates(states[-1], axioms)]
-    applied_predicates = [get_applied_predicates(states[-1], axioms)]
+    derived_state, axiom_plan = derive_predicates(states[-1], axioms)
+    derived_states = [derived_state]
+    axiom_plans = [axiom_plan]
     for operator in self.operators:
       assert derived_states[-1] in operator
       states.append(operator.apply(states[-1]))
-      derived_states.append(derive_predicates(states[-1], axioms))
-      applied_predicates.append(get_applied_predicates(states[-1], axioms))
-    return derived_states, applied_predicates
+      derived_state, axiom_plan = derive_predicates(states[-1], axioms)
+      derived_states.append(derived_state)
+      axiom_plans.append(axiom_plan)
+    return derived_states, axiom_plans
   def __str__(self):
     s = '{name} | Cost: {self.cost} | Length {self.length}'.format(name=self.__class__.__name__, self=self)
     for i, operator in enumerate(self.operators):
@@ -47,7 +49,7 @@ class Plan(object):
 class Vertex(object):
   def __init__(self, state, state_space):
     self.state = state
-    self.derived_state = derive_predicates(state, state_space.axioms) # Includes derived predicates
+    self.derived_state, self.axiom_plan = derive_predicates(state, state_space.axioms)
     self.state_space = state_space
     self.incoming_edges = []
     self.outgoing_edges = []

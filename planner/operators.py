@@ -52,23 +52,23 @@ class Operator(object):
 
 class Action(Operator): cost = 1
 class Axiom(Operator): cost = 0
-class Inference(Operator): cost = 0
 
-def get_applied_predicates(state, axioms): # TODO - layer axioms
-  applied_predicates = []
-  for axiom in axioms:
-    new_state = axiom(state)
-    if new_state is not None:
-      state = new_state
-      applied_predicates.append(axiom)
-  return applied_predicates
-
-def derive_predicates(state, axioms): # TODO - layer axioms
-  for axiom in axioms:
-    new_state = axiom(state)
-    if new_state is not None:
-      state = new_state
-  return state
+def derive_predicates(state, axioms): # TODO: use hsp instead
+  # TODO: check if the axioms invalidate anything (causing a cycle)
+  sequence = []
+  remaining = set(axioms)
+  while remaining:
+    applied = False
+    for axiom in list(remaining):
+      new_state = axiom(state)
+      if new_state is not None:
+        state = new_state
+        remaining.remove(axiom)
+        sequence.append(axiom)
+        applied = True
+    if not applied:
+      break
+  return state, sequence
 
 ###########################################################################
 
