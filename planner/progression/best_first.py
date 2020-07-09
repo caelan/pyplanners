@@ -90,7 +90,7 @@ def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
       successors.append(cv)
     for v in (reversed(successors) if stack else successors):
       v.generate() # Also evaluates the h_cost
-      if not lazy or check_test(cv):
+      if (v.h_cost < INF) and (not lazy or check_test(cv)):
         queue.push(priority(v), v)
   return None, state_space
 
@@ -98,7 +98,7 @@ def deferred_best_first_search(start, goal, generator, priority, stack=False,
                                max_time=INF, max_iterations=INF, max_generations=INF,
                                max_cost=INF, max_length=INF, debug=None):
   state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
-  queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(INF, state_space.root)])
+  queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(None, state_space.root)])
   while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
           and (state_space.iterations < max_iterations):
     state_space.iterations += 1
@@ -110,6 +110,8 @@ def deferred_best_first_search(start, goal, generator, priority, stack=False,
     if cv.contained(goal):
       return state_space.plan(cv), state_space
     cv.generate()
+    if cv.h_cost == INF:
+        continue
     h = priority(cv)
     successors = list(cv.unexplored())
     if not cv.enumerated():

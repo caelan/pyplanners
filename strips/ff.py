@@ -1,5 +1,5 @@
 from .hsp import *
-from misc.functions import argmin, flatten
+from misc.functions import argmin, flatten, INF
 
 def get_layers(costs):
     num_layers = max(pair.level for pair in costs.values()) + 1
@@ -46,11 +46,15 @@ def extract_relaxed_plan(goal, literal_costs, operator_costs):
 ###########################################################################
 
 def plan_cost(relaxed_plan, unit=False):
-    return sum(operator.cost if not unit else 1 for operator in flatten(relaxed_plan)) \
-        if relaxed_plan is not None else None
+    if relaxed_plan is None:
+        return INF
+    return sum(operator.cost if not unit else 1
+               for operator in flatten(relaxed_plan))
 
 def plan_length(relaxed_plan):
-    return len(flatten(relaxed_plan)) if (relaxed_plan is not None) else None
+    if relaxed_plan is None:
+        return INF
+    return len(flatten(relaxed_plan))
 
 def multi_cost(goal, operator_costs, relaxed_plan, relaxed_goals):
     return plan_cost(relaxed_plan), operator_costs[goal].cost, operator_costs[goal].level
@@ -88,7 +92,7 @@ def first_operators(operator_costs, relaxed_plan, relaxed_goals):
 def ff(state, goal, operators, heuristic, helpful_actions, op=max, unit=False):
     literal_costs, operator_costs = compute_costs(state, goal, operators, op=op, unit=unit)
     if goal not in operator_costs:
-        return None, []
+        return INF, []
     relaxed_plan, relaxed_goals = extract_relaxed_plan(goal, literal_costs, operator_costs)
     return heuristic(relaxed_plan), helpful_actions(operator_costs, relaxed_plan, relaxed_goals)
 
