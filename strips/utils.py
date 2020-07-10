@@ -25,7 +25,7 @@ def ha_all(state, goal, operators):
     return operators
 
 def ha_applicable(state, goal, operators):
-    return [operator for operator in operators if operator(state) is not None]
+    return [operator for operator in operators if state in operator]
 
 def ha_sorted(state, goal, operators):
     return sorted(ha_applicable(state, goal, operators), key=lambda o: o.cost)
@@ -88,7 +88,7 @@ HEURISTICS = {
 }
 
 SUCCESSORS = {
-    'all': ha_applicable,
+    'all': ha_applicable, # ha_all | ha_applicable
     #'ff': first_goals, # first_operators # TODO: make a wrapper
 }
 
@@ -102,20 +102,20 @@ def lookup_heuristic(heuristic):
     return HEURISTICS[heuristic]
 
 def solve_strips(initial, goal, operators, axioms=[], search='eager', evaluator='greedy',
-                 heuristic='ff', successor='ff', **kwargs):
+                 heuristic='ff', successors='ff', **kwargs):
     search_fn = SEARCHES[search]
     evaluator_fn = EVALUATORS[evaluator]
-    if heuristic == successor == 'ff':
+    if heuristic == successors == 'ff':
         combined_fn = ff_fn(plan_cost, first_goals, op=sum)
     else:
         if isinstance(heuristic, str):
             heuristic_fn = lookup_heuristic(HEURISTICS[heuristic])
         else:
             heuristic_fn = combine_heuristics(*map(lookup_heuristic, heuristic))
-        if isinstance(successor, str):
-            successor_fn = SUCCESSORS[successor]
+        if isinstance(successors, str):
+            successor_fn = SUCCESSORS[successors]
         else:
-            successor_fn = combine_helpfuls(*successor)
+            successor_fn = combine_helpfuls(*successors)
         combined_fn = pair_h_and_ha(heuristic_fn, successor_fn)
     generator_fn = single_generator(goal, operators, axioms, combined_fn)
     return search_fn(initial, goal, generator_fn, evaluator_fn, **kwargs)

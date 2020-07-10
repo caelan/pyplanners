@@ -21,12 +21,14 @@ greedy = weighted(INF)
 
 # TODO: deprecate
 
-def path_cost_fn(v):
-  return v.cost
-def greedy_cost_fn(v):
-  return v.h_cost
+def path_cost_fn(vertex):
+  return vertex.cost
+
+def greedy_cost_fn(vertex):
+  return vertex.h_cost
+
 def weighted_cost_fn(alpha):
-  return lambda v: (1 - alpha) * v.cost + alpha * v.h_cost
+  return lambda vertex: (1 - alpha) * vertex.cost + alpha * vertex.h_cost
 
 ###########################################################################
 
@@ -75,7 +77,7 @@ def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
   state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
   sv = state_space.root
   sv.generate()
-  if sv.h_cost == INF:
+  if sv.is_dead_end():
     return None, state_space
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(priority(sv), sv)])
   while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
@@ -93,7 +95,7 @@ def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
       successors.append(cv)
     for v in (reversed(successors) if stack else successors):
       v.generate() # Also evaluates the h_cost
-      if (v.h_cost < INF) and (not lazy or check_test(cv)):
+      if (not v.is_dead_end()) and (lazy or check_test(v)):
         queue.push(priority(v), v)
   return None, state_space
 
@@ -113,7 +115,7 @@ def deferred_best_first_search(start, goal, generator, priority, stack=False,
     if cv.contained(goal):
       return state_space.plan(cv), state_space
     cv.generate()
-    if cv.h_cost == INF:
+    if cv.is_dead_end():
         continue
     h = priority(cv)
     successors = list(cv.unexplored())

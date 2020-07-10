@@ -1,4 +1,4 @@
-from .hsp import *
+from strips.hsp import compute_costs
 from misc.functions import argmin, flatten, INF
 
 def get_layers(costs):

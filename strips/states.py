@@ -52,6 +52,7 @@ class State(object):
     def __hash__(self):
         return hash((self.__class__, self.atoms))
     def __str__(self):
+        #return '{}({})'.format(self.__class__.__name__, id(self))
         return self.__class__.__name__ + str_object(self.atoms)
     __repr__ = __str__
 

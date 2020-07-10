@@ -22,7 +22,9 @@ class Operator(object):
     def dump(self):
         print('{}\npre: {}\neff: {}\ncost: {}'.format(self, self.conditions, self.effects, self.cost))
     def __call__(self, state):
-        return self.apply(state) if self.applicable(state) else None
+        #return self.apply(state) if self.applicable(state) else None
+        assert self.applicable(state)
+        return self.apply(state)
     def is_axiom(self):
         return isinstance(self, Axiom)
     def __iter__(self):

@@ -1,5 +1,6 @@
 from collections import defaultdict, namedtuple
 from heapq import heappush, heappop
+from misc.numerical import INF
 
 Pair = namedtuple('Node', ['cost', 'level'])
 
@@ -53,19 +54,19 @@ def compute_costs(state, goal, operators, op=max, unit=False):
 
 def h_add(state, goal, operators):
     _, operator_costs = compute_costs(state, goal, operators, op=sum)
-    return operator_costs[goal].cost if goal in operator_costs else None
+    return operator_costs[goal].cost if goal in operator_costs else INF
 
 def h_max(state, goal, operators):
     _, operator_costs = compute_costs(state, goal, operators, op=max)
-    return operator_costs[goal].cost if goal in operator_costs else None
+    return operator_costs[goal].cost if goal in operator_costs else INF
 
 def h_add_unit(state, goal, operators):
     _, operator_costs = compute_costs(state, goal, operators, op=sum, unit=True)
-    return operator_costs[goal].cost if goal in operator_costs else None
+    return operator_costs[goal].cost if goal in operator_costs else INF
 
 def h_max_unit(state, goal, operators):
     _, operator_costs = compute_costs(state, goal, operators, op=max, unit=True)
-    return operator_costs[goal].cost if goal in operator_costs else None
+    return operator_costs[goal].cost if goal in operator_costs else INF
 
 ###########################################################################
 

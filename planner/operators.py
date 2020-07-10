@@ -50,8 +50,10 @@ class Operator(object):
     return self.__class__.__name__ + str_args(self.args)
   __repr__ = __str__
 
-class Action(Operator): cost = 1
-class Axiom(Operator): cost = 0
+class Action(Operator):
+  cost = 1
+class Axiom(Operator):
+  cost = 0
 
 def derive_predicates(state, axioms): # TODO: use hsp instead
   # TODO: check if the axioms invalidate anything (causing a cycle)
@@ -60,9 +62,8 @@ def derive_predicates(state, axioms): # TODO: use hsp instead
   while remaining:
     applied = False
     for axiom in list(remaining):
-      new_state = axiom(state)
-      if new_state is not None:
-        state = new_state
+      if state in axiom:
+        state = axiom(state)
         remaining.remove(axiom)
         sequence.append(axiom)
         applied = True

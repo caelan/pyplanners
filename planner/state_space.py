@@ -60,18 +60,22 @@ class Vertex(object):
     self.generations = 0
     self.generator = state_space.generator_fn(self)
     self.explored = 0
-    self.h_cost = INF
+    self.h_cost = None
   def contained(self, partial_state):
     #return self.state in partial_state
     return self.derived_state in partial_state
   def enumerated(self):
     return (self.generator is None) or (self.state_space.max_generations <= self.generations)
+  def is_dead_end(self):
+    assert self.h_cost is not None
+    h = self.h_cost[0] if isinstance(self.h_cost, tuple) else self.h_cost
+    return h == INF
   def generate(self):
     if not self.enumerated():
       try:
         self.h_cost, operators = next(self.generator)
         self.generations += 1
-        if self.h_cost is not None:
+        if not self.is_dead_end():
           for operator in operators: # TODO - should states be expanded before the heuristic check?
             self.state_space.extend(self, operator)
           return True # TODO - decide if to return true if still some unexplored (despite nothing new generated)
@@ -89,6 +93,7 @@ class Vertex(object):
     self.state_space.pop(self.state)
     self.state_space.edges.remove(self.parent_edge)
   def __str__(self):
+    #return '{}({})'.format(self.__class__.__name__, id(self))
     return 'h_cost: {self.h_cost} | cost: {self.cost} | length: {self.length} | ' \
            'generations: {self.generations} | unexplored: {unexplored}\n{self.state}'.format(
       self=self, unexplored=(len(self.outgoing_edges)-self.explored))

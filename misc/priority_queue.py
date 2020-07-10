@@ -16,6 +16,8 @@ class HeapElement(object):
   def __repr__(self):
     return '{}({}, {})'.format(self.__class__.__name__, self.key, self.value)
 
+##################################################
+
 class Stack(object):
   def __init__(self, array=[]):
     self.stack = deque(array)
@@ -27,6 +29,8 @@ class Stack(object):
     return self.stack.popleft()
   def empty(self):
     return len(self.stack) == 0
+  def __len__(self):
+    return len(self.stack)
 
 class Queue(object):
   def __init__(self, array=[]):
@@ -39,6 +43,10 @@ class Queue(object):
     return self.queue.popleft()
   def empty(self):
     return len(self.queue) == 0
+  def __len__(self):
+    return len(self.queue)
+
+##################################################
 
 class StableQueue(object):
   sign = 0
@@ -61,9 +69,15 @@ class PriorityQueue(StableQueue):
     return heappop(self.queue).element
   def empty(self):
     return len(self.queue) == 0
+  def __len__(self):
+    return len(self.queue)
 
-class FIFOPriorityQueue(PriorityQueue): sign = 1
-class FILOPriorityQueue(PriorityQueue): sign = -1
+class FIFOPriorityQueue(PriorityQueue):
+  sign = 1
+class FILOPriorityQueue(PriorityQueue):
+  sign = -1
+
+##################################################
 
 class ClassicPriorityQueue(StableQueue):
   def __init__(self, array=[]):
@@ -88,5 +102,7 @@ class ClassicPriorityQueue(StableQueue):
     self.clean()
     return len(self.queue) == 0
 
-class FIFOClassicPriorityQueue(ClassicPriorityQueue): sign = 1
-class FILOClassicPriorityQueue(ClassicPriorityQueue): sign = -1
+class FIFOClassicPriorityQueue(ClassicPriorityQueue):
+  sign = 1
+class FILOClassicPriorityQueue(ClassicPriorityQueue):
+  sign = -1
