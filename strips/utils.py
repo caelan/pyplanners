@@ -1,5 +1,6 @@
 from strips.ff import ff_fn, plan_cost, first_goals, h_ff_add, first_operators
 from strips.hsp import h_add, h_max
+from strips.operators import Action
 from misc.functions import in_add, INF
 from planner.progression.best_first import best_first_search, deferred_best_first_search, \
     uniform, astar, wastar2, wastar3, greedy
@@ -21,11 +22,13 @@ def h_action(state, goal, operators):
 
 ###########################################################################
 
+# TODO: filter out axioms
+
 def ha_all(state, goal, operators):
-    return operators
+    return [o for o in operators if isinstance(o, Action)]
 
 def ha_applicable(state, goal, operators):
-    return [operator for operator in operators if state in operator]
+    return [operator for operator in ha_all(state, goal, operators) if state in operator]
 
 def ha_sorted(state, goal, operators):
     return sorted(ha_applicable(state, goal, operators), key=lambda o: o.cost)
@@ -114,6 +117,8 @@ def solve_strips(initial, goal, operators, axioms=[], search='eager', evaluator=
             heuristic_fn = combine_heuristics(*map(lookup_heuristic, heuristic))
         if isinstance(successors, str):
             successor_fn = SUCCESSORS[successors]
+        elif callable(successors):
+            successor_fn = successors
         else:
             successor_fn = combine_helpfuls(*successors)
         combined_fn = pair_h_and_ha(heuristic_fn, successor_fn)

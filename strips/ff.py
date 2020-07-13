@@ -1,4 +1,6 @@
 from strips.hsp import compute_costs
+
+from strips.operators import Action
 from misc.functions import argmin, flatten, INF
 
 def get_layers(costs):
@@ -67,7 +69,8 @@ def none(operator_costs, relaxed_plan, relaxed_goals):
     return []
 
 def applicable(operator_costs, relaxed_plan, relaxed_goals):
-    return [o for o, (_, level) in operator_costs.items() if level == 0]
+    return [o for o, (_, level) in operator_costs.items()
+            if isinstance(o, Action) and (level == 0)]
 
 def backpointers(operator_costs, relaxed_plan, relaxed_goals):
     # Retrace actions without using extract_relaxed_plan
@@ -78,12 +81,12 @@ def first_goals(operator_costs, relaxed_plan, relaxed_goals):
     if len(relaxed_goals) <= 1:
         return []
     return [o for o, (_, level) in operator_costs.items()
-            if (level == 0) and any(effect in relaxed_goals[1] for effect in o.effects)]
+            if isinstance(o, Action) and (level == 0) and any(effect in relaxed_goals[1] for effect in o.effects)]
 
 def first_operators(operator_costs, relaxed_plan, relaxed_goals):
     if not relaxed_plan:
         return []
-    return relaxed_plan[0]
+    return [o for o in relaxed_plan[0] if isinstance(o, Action)]
 
 # TODO: prioritize helpful actions
 
