@@ -1,6 +1,7 @@
 from random import shuffle, choice
 from itertools import cycle, islice, permutations, chain, product, count
 from collections import Iterable
+from functools import reduce
 from .numerical import INF
 import operator
 import time
@@ -56,7 +57,8 @@ def pop_min(function, array):
   return array.pop(scores.index(min(scores)))
 
 def safe_function(function, sequence, default):
-  if len(sequence) == 0: return default
+  if len(sequence) == 0:
+    return default
   return function(sequence)
 
 def safe_choice(sequence, default=None):
@@ -75,7 +77,8 @@ def safe_minmax(iterable_of_iterables):
   return safe_min([safe_max(iterables) for iterables in iterable_of_iterables])
 
 def safe_index(sequence, value, default=-1):
-  if value not in sequence: return default
+  if value not in sequence:
+    return default
   return sequence.index(value)
 
 def pairs(lst):
@@ -119,7 +122,8 @@ def round_robin(*iterables):
 
 def merge_unique(iterables, sort=False):
   merged = list(set(reduce(operator.add, iterables)))
-  if sort: return sorted(merged)
+  if sort:
+    return sorted(merged)
   return merged
 
 def merge_dicts(*args):

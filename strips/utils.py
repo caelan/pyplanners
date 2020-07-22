@@ -55,9 +55,14 @@ def combine_helpfuls(*helpfuls):
 
 ###########################################################################
 
+# TODO: multiple cost bounds (real cost and effort)
+# TODO: negative axioms
+# TODO: grounding function at all
+
 def single_generator(goal, operators, axioms, successors):
     #return lambda v: (yield successors(v.state, goal, operators))
     def generator(vertex):
+        # TODO: a generator that regrounds at each state based on the current static facts
         heuristic, helpful_actions = successors(vertex.derived_state, goal, operators + axioms)
         #helpful_actions = list(filter(lambda op: op not in axioms, helpful_actions))
         helpful_actions = list(filter(lambda o: not o.is_axiom(), helpful_actions))

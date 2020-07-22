@@ -99,6 +99,7 @@ class Vertex(object):
       self=self, unexplored=(len(self.outgoing_edges)-self.explored))
   __repr__ = __str__
 
+# TODO: lazily evaluate the next state
 class Edge(object):
   def __init__(self, source, sink, operator):
     self.source = source
@@ -135,30 +136,33 @@ class StateSpace(object):
     self.root.cost = 0
     self.root.length = 0
     self.root.extensions += 1
-  def __contains__(self, state):
+  def has_state(self, state):
     return state in self.vertices
-  def __getitem__(self, state):
+  __contains__ = has_state
+  def get_state(self, state):
     if state not in self:
       self.vertices[state] = Vertex(state, self)
     return self.vertices[state]
+  __getitem__ = get_state
   def __iter__(self):
     return iter(self.vertices.values())
   def __len__(self):
     return len(self.vertices)
   def extend(self, vertex, operator):
-    if (vertex.cost + operator.cost <= self.max_cost) and (vertex.length + len(operator) <= self.max_length):
+    if (vertex.cost + operator.cost <= self.max_cost) \
+            and (vertex.length + len(operator) <= self.max_length) \
+            and vertex.contained(operator):
       #if vertex.state in operator:
-      if vertex.contained(operator):
-        if self.axioms:
-          assert not isinstance(operator, MacroOperator)
-          sink_state = operator.apply(vertex.state) # TODO - this won't work for MacroOperators yet?
-        else:
-          sink_state = operator(vertex.state)[-1] if isinstance(operator, MacroOperator) else operator(vertex.state)
-        if (sink_state is not None) and (self[sink_state].extensions < self.max_extensions):
-          sink_vertex = self[sink_state]
-          self.edges.append(Edge(vertex, sink_vertex, operator))
-          sink_vertex.extensions += 1
-          return sink_vertex
+      if self.axioms:
+        assert not isinstance(operator, MacroOperator)
+        sink_state = operator.apply(vertex.state) # TODO - this won't work for MacroOperators yet?
+      else:
+        sink_state = operator(vertex.state)[-1] if isinstance(operator, MacroOperator) else operator(vertex.state)
+      if (sink_state is not None) and (self[sink_state].extensions < self.max_extensions):
+        sink_vertex = self[sink_state]
+        self.edges.append(Edge(vertex, sink_vertex, operator))
+        sink_vertex.extensions += 1
+        return sink_vertex
     return None
   def retrace(self, vertex):
     if vertex is not None:

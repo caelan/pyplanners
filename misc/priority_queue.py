@@ -1,6 +1,6 @@
 from heapq import heappush, heappop, heapify
 #from Queue import PriorityQueue
-from collections import namedtuple, defaultdict, deque
+from collections import namedtuple, deque
 from itertools import count
 
 # TODO - multi-priority queues
@@ -28,7 +28,7 @@ class Stack(object):
   def pop(self):
     return self.stack.popleft()
   def empty(self):
-    return len(self.stack) == 0
+    return len(self) == 0
   def __len__(self):
     return len(self.stack)
 
@@ -42,7 +42,7 @@ class Queue(object):
   def pop(self):
     return self.queue.popleft()
   def empty(self):
-    return len(self.queue) == 0
+    return len(self) == 0
   def __len__(self):
     return len(self.queue)
 
@@ -68,7 +68,7 @@ class PriorityQueue(StableQueue):
   def pop(self):
     return heappop(self.queue).element
   def empty(self):
-    return len(self.queue) == 0
+    return len(self) == 0
   def __len__(self):
     return len(self.queue)
 
@@ -85,13 +85,15 @@ class ClassicPriorityQueue(StableQueue):
     self.queue = []
     self.priorities = {}
     self.processed = set()
-    for x in array: self.decrease_key(*x)
+    for x in array:
+      self.decrease_key(*x)
   def decrease_key(self, priority, element):
-    if element not in self.priorities or priority < self.priorities[element]:
+    if (element not in self.priorities) or (priority < self.priorities[element]):
       self.priorities[element] = priority
-      heappush(self.queue, self.new_node(priority, element)) # TODO - retain old priority?
+      heappush(self.queue, self.new_node(priority, element))
   def clean(self):
-    while len(self.queue) > 0 and self.queue[0] in self.processed: # NOTE - gets rid of redundant queue nodes
+    # gets rid of redundant queue nodes
+    while (len(self.queue) != 0) and (self.queue[0] in self.processed):
       heappop(self.queue)
   def pop(self):
     self.clean()
