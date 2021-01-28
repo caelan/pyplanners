@@ -55,7 +55,9 @@ class Action(Operator):
 class Axiom(Operator):
   cost = 0
 
-def derive_predicates(state, axioms): # TODO: use hsp instead
+###########################################################################
+
+def derive_predicates_slow(state, axioms):
   # TODO: check if the axioms invalidate anything (causing a cycle)
   sequence = []
   remaining = set(axioms)
@@ -70,6 +72,15 @@ def derive_predicates(state, axioms): # TODO: use hsp instead
     if not applied:
       break
   return state, sequence
+
+def derive_predicates(state, axioms):
+  if not axioms:
+    return state
+  is_strips = 'strips' in axioms[0].__class__.__module__ # TODO: clean this up
+  if is_strips:
+    from strips.operators import derive_state
+    return derive_state(state, axioms)
+  return derive_predicates_slow(state, axioms)
 
 ###########################################################################
 

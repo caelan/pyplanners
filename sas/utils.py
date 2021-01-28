@@ -95,7 +95,7 @@ def downward_plan(initial, goal, operators):
 #default_search = lambda initial, goal, generator: best_first_search(initial, goal, generator,
 #        lambda v: v.h_cost, False, INF, INF, INF, INF, INF, None)
 default_search = lambda initial, goal, generator: deferred_best_first_search(initial, goal, generator,
-        lambda v: v.h_cost, False, INF, INF, INF, INF, INF, None) # True vs False can matter quite a bit
+        lambda v: v.h_cost, stack=False, max_time=INF, max_iterations=INF, debug=None) # True vs False can matter quite a bit
 #default_search = lambda initial, goal, generator: semideferred_best_first_search(initial, goal, generator,
 #        lambda v: v.h_cost, True, INF, INF, INF, INF, INF, None) # True vs False can matter quite a bit
 #default_search = lambda initial, goal, generator: hill_climbing_search(initial, goal, generator,

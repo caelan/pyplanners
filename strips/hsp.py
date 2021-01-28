@@ -23,6 +23,7 @@ def compute_costs(state, goal, operators, op=max, unit=False):
             operator_level = max(literal_costs[literal].level for literal in operator.conditions)
         operator_costs[operator] = Pair(operator_cost, operator_level)
         if operator == goal:
+            # TODO: terminate earlier if the goal is achieved
             return True
         literal_cost = operator_cost + (operator.cost if not unit else 1)
         literal_level = operator_level + 1

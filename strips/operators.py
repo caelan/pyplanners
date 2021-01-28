@@ -1,3 +1,4 @@
+from collections import defaultdict, deque
 from .states import State, PartialState
 from misc.objects import str_object
 
@@ -59,3 +60,39 @@ class Action(Operator):
     cost = 1
 class Axiom(Operator): 
     cost = 0
+
+###########################################################################
+
+def derive_state(state, axioms):
+    # TODO: assumes there isn't any contradiction
+    unprocessed = defaultdict(list)
+    unsatisfied = {}
+    for axiom in axioms:
+        unsatisfied[axiom] = len(axiom.conditions)
+        for literal in axiom.conditions:
+            unprocessed[literal].append(axiom)
+
+    reached_literals = {literal for literal in unprocessed if literal in state}
+    queue = deque(reached_literals)
+
+    def process_operator(axiom):
+        for effect in axiom.effects:
+            if effect not in reached_literals:
+                reached_literals.add(effect)
+                queue.append(effect)
+
+    for axiom in unsatisfied:
+        if unsatisfied[axiom] == 0:
+            process_operator(axiom)
+    while queue:
+        literal = queue.popleft()
+        for axiom in unprocessed[literal]:
+            unsatisfied[axiom] -= 1
+            if unsatisfied[axiom] == 0:
+                process_operator(axiom)
+        del unprocessed[literal]
+
+    state = State({atom for atom in state.atoms if atom.negate() not in reached_literals} |
+                  {literal for literal in reached_literals if not literal.negated}, external=state.external)
+    axiom_plan = [] # TODO: retrace an axiom plan
+    return state, axiom_plan
