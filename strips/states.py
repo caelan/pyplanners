@@ -66,7 +66,7 @@ class PartialState(object):
         self.conditions = frozenset(literals)
         self.test = test
     def contains(self, state):
-        return all(literal in state for literal in self.conditions) and self.test(state)
+        return all(literal in state for literal in self.conditions) # and self.test(state)
     __contains__ = contains
     def __iter__(self):
         return iter(self.conditions)

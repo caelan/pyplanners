@@ -1,5 +1,7 @@
 from .operators import *
 from misc.functions import elapsed_time
+from misc.numerical import INF
+from misc.objects import str_line
 import time
 
 # TODO - can rewire state-space if found a better parent
@@ -118,7 +120,7 @@ class Edge(object):
 #################################################################
 
 class StateSpace(object):
-  def __init__(self, generator_fn, start, max_extensions, max_generations, max_cost, max_length):
+  def __init__(self, generator_fn, start, max_extensions=INF, max_generations=INF, max_cost=INF, max_length=INF):
     self.start_time = time.time()
     self.iterations = 0
     self.vertices = {}

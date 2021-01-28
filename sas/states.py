@@ -25,9 +25,10 @@ class PartialState(object):
   def __contains__(self, state):
     return all(state[var] == value for var, value in self.cond()) #and self.test(state)
 
-class Goal(PartialState):
-  def __init__(self, values):
+class Goal(PartialState): # TODO: unify PartialState and Goal
+  def __init__(self, values, test=lambda state: True):
     self.conditions = values
+    self.test = test
   def __eq__(self, other):
     return (type(self) == type(other)) and (self.conditions == other.conditions)
   def __ne__(self, other):

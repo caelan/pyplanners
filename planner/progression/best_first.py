@@ -32,24 +32,32 @@ def weighted_cost_fn(alpha):
 
 ###########################################################################
 
-def check_test(vertex):
-  if vertex.parent_edge is None:
+def test_goal(vertex, goal):
+  # TODO: apply the goal test as well
+  return vertex.contained(goal)
+
+def test_parent_operator(vertex):
+  parent_edge = vertex.parent_edge
+  if parent_edge is None:
     return True
-  parent_state = vertex.parent_edge.source.state
-  parent_op = vertex.parent_edge.operator
+  parent_op = parent_edge.operator
+  parent_state = parent_edge.source.state
   valid = parent_op.test(parent_state) # TODO: hasattr
   if not valid:
+    # TODO: ensure that other paths to vertex.state aren't blocked
     vertex.disconnect()
-  # TODO: apply external
+  # TODO: apply external functions
   return valid
+
+def order_successors(successors, stack=False):
+    return reversed(successors) if stack else successors
 
 ###########################################################################
 
 def a_star_search(start, goal, generator, priority, stack=False,
-                  max_time=INF, max_iterations=INF, max_generations=INF,
-                  max_cost=INF, max_length=INF, debug=None):
-  # TODO: update
-  state_space = StateSpace(generator, start, INF, max_generations, max_cost, max_length)
+                  max_time=INF, max_iterations=INF, debug=None, **kwargs):
+  # TODO: update to use test_parent_operator
+  state_space = StateSpace(generator, start, max_extensions=INF, **kwargs)
   sv = state_space.root
   if sv.contained(goal):
     return state_space.plan(sv), state_space
@@ -62,7 +70,7 @@ def a_star_search(start, goal, generator, priority, stack=False,
     state_space.iterations += 1
     if debug is not None:
       debug(cv)
-    if cv.contained(goal):
+    if test_goal(cv, goal):
       return state_space.plan(cv), state_space
     while cv.generate():
       pass # NOTE - A* is not optimal even for an admissible heuristic if you allow re-expansion of branches
@@ -74,9 +82,8 @@ def a_star_search(start, goal, generator, priority, stack=False,
   return None, state_space
 
 def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
-                      max_time=INF, max_iterations=INF, max_generations=INF,
-                      max_cost=INF, max_length=INF, debug=None):
-  state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
+                      max_time=INF, max_iterations=INF, debug=None, **kwargs):
+  state_space = StateSpace(generator, start, max_extensions=1, **kwargs)
   sv = state_space.root
   sv.generate()
   if sv.is_dead_end():
@@ -86,31 +93,30 @@ def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
           and (state_space.iterations < max_iterations):
     state_space.iterations += 1
     cv = queue.pop()
-    if lazy and not check_test(cv):
+    if lazy and not test_parent_operator(cv):
       continue
     if debug is not None:
       debug(cv)
-    if cv.contained(goal):
+    if test_goal(cv, goal):
       return state_space.plan(cv), state_space
     successors = list(cv.unexplored())
     if not cv.enumerated():
       successors.append(cv)
-    for v in (reversed(successors) if stack else successors):
+    for v in order_successors(successors, stack):
       v.generate() # Also evaluates the h_cost
-      if (not v.is_dead_end()) and (lazy or check_test(v)):
+      if (not v.is_dead_end()) and (lazy or test_parent_operator(v)):
         queue.push(priority(v), v)
   return None, state_space
 
 def deferred_best_first_search(start, goal, generator, priority, stack=False,
-                               max_time=INF, max_iterations=INF, max_generations=INF,
-                               max_cost=INF, max_length=INF, debug=None):
-  state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
+                               max_time=INF, max_iterations=INF, debug=None, **kwargs):
+  state_space = StateSpace(generator, start, max_extensions=1, **kwargs)
   queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(None, state_space.root)])
   while not queue.empty() and (elapsed_time(state_space.start_time) < max_time) \
           and (state_space.iterations < max_iterations):
     state_space.iterations += 1
     cv = queue.pop()
-    if not check_test(cv):
+    if not test_parent_operator(cv):
       continue
     if debug is not None:
       debug(cv)
@@ -123,7 +129,7 @@ def deferred_best_first_search(start, goal, generator, priority, stack=False,
     successors = list(cv.unexplored())
     if not cv.enumerated():
       successors.append(cv) # TODO: use its prior value
-    for v in (reversed(successors) if stack else successors):
+    for v in order_successors(successors, stack):
       queue.push(h, v) # TODO: combine with the action cost
   return None, state_space
 
