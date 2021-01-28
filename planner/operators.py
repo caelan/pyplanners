@@ -75,7 +75,7 @@ def derive_predicates_slow(state, axioms):
 
 def derive_predicates(state, axioms):
   if not axioms:
-    return state
+    return state, []
   is_strips = 'strips' in axioms[0].__class__.__module__ # TODO: clean this up
   if is_strips:
     from strips.operators import derive_state
