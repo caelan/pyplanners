@@ -10,14 +10,25 @@ def pause_debug(vertex):
   user_input('Hit enter to continue')
   print()
 
+def path_cost_fn(vertex):
+  return vertex.cost
+
+def greedy_cost_fn(vertex):
+  return vertex.h_cost
+
+def weighted_cost_fn(alpha):
+  return lambda vertex: (1 - alpha) * vertex.cost + alpha * vertex.h_cost
+
+###########################################################################
+
 def default_search(search=False, debug=False):
-  if search is False: search = deferred_best_first_search # hill_climbing_search | deferred_best_first_search | best_first_search | bfs | dfs | srandom_walk | srrt | rbfs | rdfs | random_walk | rrt
-  max_time = INF
-  max_iterations = INF
-  max_generations = INF
-  max_cost = INF
-  max_length = INF
-  if debug is False: debug = simple_debug # simple_debug | None
+  # hill_climbing_search | deferred_best_first_search | best_first_search | bfs | dfs
+  # srandom_walk | srrt | rbfs | rdfs | random_walk | rrt
+  if search is False:
+    search = deferred_best_first_search
+  max_time = max_iterations = max_generations = max_cost = max_length = INF
+  if debug is False:
+    debug = simple_debug # simple_debug | None
 
   # TODO - return associated parameters by integrating with Function
   if search == hill_climbing_search:
@@ -29,6 +40,7 @@ def default_search(search=False, debug=False):
     return lambda start, goal, generator: search(start, goal, generator,
         cost_step, strategy, recurrence, steepest, max_time, max_iterations, max_generations, max_cost, max_length, debug)
 
+  # TODO: be careful about the argument ordering
   if search == a_star_search:
     max_generations = 1
     cost_fn = weighted_cost_fn(.5) # path_cost_fn

@@ -1,4 +1,4 @@
-from misc.utils import *
+from random import random, randint, choice
 
 def pop_random(queue):
   queue.rotate(randint(0, len(queue)-1))

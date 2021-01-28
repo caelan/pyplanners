@@ -19,35 +19,25 @@ greedy = weighted(INF)
 
 ###########################################################################
 
-# TODO: deprecate
-
-def path_cost_fn(vertex):
-  return vertex.cost
-
-def greedy_cost_fn(vertex):
-  return vertex.h_cost
-
-def weighted_cost_fn(alpha):
-  return lambda vertex: (1 - alpha) * vertex.cost + alpha * vertex.h_cost
-
-###########################################################################
-
 def test_goal(vertex, goal):
-  # TODO: apply the goal test as well
-  return vertex.contained(goal)
+  if not vertex.contained(goal):
+    return False
+  if not hasattr(goal, 'test'):
+    return True
+  return goal.test(vertex.state)
 
-def test_parent_operator(vertex):
-  parent_edge = vertex.parent_edge
+def test_parent_operator(sink_vertex):
+  parent_edge = sink_vertex.parent_edge
   if parent_edge is None:
     return True
   parent_op = parent_edge.operator
+  if not hasattr(parent_op, 'test'):
+    return True
   parent_state = parent_edge.source.state
-  valid = parent_op.test(parent_state) # TODO: hasattr
-  if not valid:
-    # TODO: ensure that other paths to vertex.state aren't blocked
-    vertex.disconnect()
   # TODO: apply external functions
-  return valid
+  if parent_op.test(parent_state):
+    return True
+  return False
 
 def order_successors(successors, stack=False):
     return reversed(successors) if stack else successors
@@ -120,12 +110,12 @@ def deferred_best_first_search(start, goal, generator, priority, stack=False,
       continue
     if debug is not None:
       debug(cv)
-    if cv.contained(goal):
+    if test_goal(cv, goal):
       return state_space.plan(cv), state_space
     cv.generate()
     if cv.is_dead_end():
         continue
-    h = priority(cv)
+    h = priority(cv) # TODO: incorporate the path cost of v instead of cv
     successors = list(cv.unexplored())
     if not cv.enumerated():
       successors.append(cv) # TODO: use its prior value
@@ -141,9 +131,9 @@ def macro_greedy_cost_fn(v):
     return v.h_cost
   return v.parent_edge.source.h_cost - len(v.parent_edge.operator)
 
-def macro_deferred_best_first_search(start, goal, generator, priority, stack, max_time, max_iterations,
-                                     max_generations, max_cost, max_length, debug):
-  state_space = StateSpace(generator, start, 1, max_generations, max_cost, max_length)
+def macro_deferred_best_first_search(start, goal, generator, priority, stack=False,
+                                     max_time=INF, max_iterations=INF, debug=None, **kwargs):
+  state_space = StateSpace(generator, start, max_extensions=1, **kwargs)
   sv = state_space.root
   if sv.contained(goal):
     return state_space.plan(sv), state_space
@@ -160,7 +150,7 @@ def macro_deferred_best_first_search(start, goal, generator, priority, stack, ma
     gv = first(lambda v: v.contained(goal), successors[:-1])
     if gv is not None:
       return state_space.plan(gv), state_space
-    for v in (reversed(successors) if stack else successors):
+    for v in order_successors(successors, stack):
       queue.push(priority(v), v)
   return None, state_space
 

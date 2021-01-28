@@ -1,5 +1,11 @@
-from ..state_space import *
-from misc.utils import in_add
+from time import time
+from collections import deque
+
+from ..state_space import StateSpace
+from ..operators import MacroOperator
+from misc.utils import in_add, chain
+from misc.objects import enum
+from misc.numerical import INF
 
 # TODO
 # - Optimal variant that finds 1 or more plans, and WPS off those paths to find a low cost path
@@ -12,7 +18,8 @@ from misc.utils import in_add
 
 strategies = enum('LOCAL', 'REVERSE', 'START', 'SEQUENCE')
 
-def hill_climbing_search(start, goal, generator, cost_step, strategy, recurrence, steepest, max_time, max_iterations, max_generations, max_cost, max_length, debug):
+def hill_climbing_search(start, goal, generator, cost_step, strategy, recurrence, steepest,
+                         max_time, max_iterations, max_generations, max_cost, max_length, debug):
   state_space = StateSpace(generator, start, INF, max_generations, max_cost, max_length) # NOTE - max_extensions needs to be INF
 
   def negative_gradient(cost1, cost2):

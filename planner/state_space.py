@@ -1,5 +1,5 @@
-from .operators import *
-from misc.functions import elapsed_time
+from .operators import derive_predicates, MacroOperator
+from misc.functions import elapsed_time, safe_remove
 from misc.numerical import INF
 from misc.objects import str_line
 import time
@@ -53,16 +53,29 @@ class Vertex(object):
     self.state = state
     self.derived_state, self.axiom_plan = derive_predicates(state, state_space.axioms)
     self.state_space = state_space
+    self.generator = state_space.generator_fn(self)
     self.incoming_edges = []
     self.outgoing_edges = []
-    self.cost = INF
-    self.length = INF
-    self.parent_edge = None
     self.extensions = 0
     self.generations = 0
-    self.generator = state_space.generator_fn(self)
     self.explored = 0
     self.h_cost = None
+    self.reset_path()
+  def reset_path(self):
+    self.cost = INF # TODO: path_cost
+    self.length = INF # TODO: path_length
+    self.parent_edge = None
+    for edge in self.incoming_edges:
+      # TODO: propagate
+      self.relax(edge)
+  def relax(self, edge):
+    assert edge.sink == self
+    if edge.path_cost < self.cost:
+      self.cost = edge.path_cost
+      self.length = edge.path_length
+      self.parent_edge = edge
+      return True
+    return False
   def contained(self, partial_state):
     #return self.state in partial_state
     return self.derived_state in partial_state
@@ -90,10 +103,6 @@ class Vertex(object):
     while self.has_unexplored():
       self.explored += 1
       yield self.outgoing_edges[self.explored-1].sink
-  def disconnect(self):
-    assert self.parent_edge is not None
-    self.state_space.pop(self.state)
-    self.state_space.edges.remove(self.parent_edge)
   def __str__(self):
     #return '{}({})'.format(self.__class__.__name__, id(self))
     return 'h_cost: {self.h_cost} | cost: {self.cost} | length: {self.length} | ' \
@@ -103,16 +112,27 @@ class Vertex(object):
 
 # TODO: lazily evaluate the next state
 class Edge(object):
-  def __init__(self, source, sink, operator):
+  def __init__(self, source, sink, operator, state_space):
     self.source = source
     self.sink = sink
     self.operator = operator
+    self.state_space = state_space
     self.source.outgoing_edges.append(self)
     self.sink.incoming_edges.append(self)
-    if source.cost + operator.cost < sink.cost:
-      sink.cost = source.cost + operator.cost
-      sink.length = source.length + len(operator)
-      sink.parent_edge = self
+    self.sink.relax(self)
+  @property
+  def path_cost(self):
+    return self.source.cost + self.operator.cost
+  @property
+  def path_length(self):
+    return self.source.length + 1
+  def delete(self):
+    safe_remove(self.source.outgoing_edges, self)
+    safe_remove(self.sink.incoming_edges, self)
+    safe_remove(self.state_space.edges, self)
+    if self.sink.parent_edge == self:
+      # TODO: propagate
+      self.sink.reset_path()
   def __str__(self):
     return '{}({})'.format(self.__class__.__name__, self.operator)
   __repr__ = __str__
@@ -162,7 +182,7 @@ class StateSpace(object):
         sink_state = operator(vertex.state)[-1] if isinstance(operator, MacroOperator) else operator(vertex.state)
       if (sink_state is not None) and (self[sink_state].extensions < self.max_extensions):
         sink_vertex = self[sink_state]
-        self.edges.append(Edge(vertex, sink_vertex, operator))
+        self.edges.append(Edge(vertex, sink_vertex, operator, self))
         sink_vertex.extensions += 1
         return sink_vertex
     return None

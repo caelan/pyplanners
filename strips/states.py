@@ -64,7 +64,7 @@ class State(object):
 class PartialState(object):
     def __init__(self, literals, test=lambda state: True):
         self.conditions = frozenset(literals)
-        self.test = test
+        self.test = test # TODO: cache the test results
     def contains(self, state):
         return all(literal in state for literal in self.conditions) # and self.test(state)
     __contains__ = contains

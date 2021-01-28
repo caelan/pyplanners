@@ -56,6 +56,13 @@ def pop_min(function, array):
   scores = [function(x) for x in array]
   return array.pop(scores.index(min(scores)))
 
+def safe_remove(sequence, item):
+  try:
+    sequence.remove(item)
+    return True
+  except ValueError:
+    return False
+
 def safe_function(function, sequence, default):
   if len(sequence) == 0:
     return default
