@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 from .operators import derive_predicates, MacroOperator
 from misc.functions import elapsed_time, safe_remove
 from misc.numerical import INF
@@ -5,6 +7,8 @@ from misc.objects import str_line
 import time
 
 # TODO - can rewire state-space if found a better parent
+
+Solution = namedtuple('Solution', ['plan', 'state_space'])
 
 class Plan(object):
   def __init__(self, start, operators):
@@ -86,17 +90,23 @@ class Vertex(object):
     h = self.h_cost[0] if isinstance(self.h_cost, tuple) else self.h_cost
     return h == INF
   def generate(self):
-    if not self.enumerated():
-      try:
-        self.h_cost, operators = next(self.generator)
-        self.generations += 1
-        if not self.is_dead_end():
-          for operator in operators: # TODO - should states be expanded before the heuristic check?
-            self.state_space.extend(self, operator)
-          return True # TODO - decide if to return true if still some unexplored (despite nothing new generated)
-      except StopIteration:
-        self.generator = None
-    return False # TODO: change the semantics of this to be generated at least one new
+    if self.enumerated():
+      return False  # TODO: change the semantics of this to be generated at least one new
+    try:
+      self.h_cost, operators = next(self.generator)
+      self.generations += 1
+      if not self.is_dead_end():
+        for operator in operators: # TODO - should states be expanded before the heuristic check?
+          self.state_space.extend(self, operator)
+        return True # TODO - decide if to return true if still some unexplored (despite nothing new generated)
+    except StopIteration:
+      self.generator = None
+    return False
+  def generate_all(self):
+    new = False
+    while not self.enumerated():
+      new |= self.generate()
+    return new
   def has_unexplored(self):
     return self.explored < len(self.outgoing_edges)
   def unexplored(self):
@@ -199,6 +209,10 @@ class StateSpace(object):
     if sequence is None:
       return None
     return Plan(self.root.state, sequence)
+  def solution(self, vertex):
+    return Solution(self.plan(vertex), self)
+  def failure(self):
+    return Solution(None, self)
   def time_elapsed(self):
     return elapsed_time(self.start_time)
   def num_expanded(self):
