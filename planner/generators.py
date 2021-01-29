@@ -30,10 +30,12 @@ def reachability_generator(vertex, rg, h_fn, ha_fn, max_time=INF, max_iterations
 
 # TODO - distinguish between samples and generations?
 # NOTE - still want to compute reachabilty each time even if not adding new samples
-def connectivity_generator(vertex, cg, h_fn, ha_fn, max_time=INF, max_iterations=INF, max_cycles=INF, max_generations=INF, greedy=True):
+def connectivity_generator(vertex, cg, h_fn, ha_fn, max_time=INF, max_iterations=INF,
+                           max_cycles=INF, max_generations=INF, greedy=True):
   reachable, exhausted = False, False
   while not exhausted:
-    reachable, exhausted = cg.grow(vertex.state, max_time=max_time, max_iterations=max_iterations, max_cycles=max_cycles, max_generations=max_generations, greedy=greedy)
+    reachable, exhausted = cg.grow(vertex.state, max_time=max_time, max_iterations=max_iterations,
+                                   max_cycles=max_cycles, max_generations=max_generations, greedy=greedy)
     if reachable:
       #h, ha = h_fn(cg), ha_fn(cg)
       #for a in ha:

@@ -8,9 +8,9 @@ import platform
 import socket
 
 try:
-   user_input = raw_input
+  user_input = raw_input
 except NameError:
-   user_input = input
+  user_input = input
 
 def computer_name():
   #return platform.node() # = platform.platform() = socket.gethostname() ~= os.environ['COMPUTERNAME']

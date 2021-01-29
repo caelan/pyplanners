@@ -15,45 +15,45 @@ INF = float('inf')
 np.set_printoptions(suppress=True) # precision=5,
 
 def within(v1, v2, eps=1e-6):
-  return abs(v1 - v2) < eps
+    return abs(v1 - v2) < eps
 
 def clip(value, min_value=-INF, max_value=INF):
-  return max(min(value, max_value), min_value)
+    return max(min(value, max_value), min_value)
 
 def positive_angle(angle): # [0, 2*PI)
-  return angle%(2*PI)
+    return angle%(2*PI)
 
 def symmetric_angle(angle): # [-PI, PI)
-  return (angle + PI)%(2*PI) - PI
+    return (angle + PI)%(2*PI) - PI
 
 def sample_categorical(categories):
-  names = categories.keys()
-  cutoffs = np.cumsum([categories[name] for name in names])/sum(categories.values())
-  return names[bisect(cutoffs, random())]
+    names = categories.keys()
+    cutoffs = np.cumsum([categories[name] for name in names])/sum(categories.values())
+    return names[bisect(cutoffs, random())]
 
 #def sample_categorical(categories):
 #  names = categories.keys()
 #  return np.random.multinomial(1, np.array(categories.values())/sum(categories.values()), size=1)
 
 def sample_boltzmann(categories):
-  return sample_categorical({k: exp(v) for k, v in categories.items()})
+    return sample_categorical({k: exp(v) for k, v in categories.items()})
 
 def uniform_categorical(categories):
-  return {c: 1./len(categories) for c in categories}
+    return {c: 1./len(categories) for c in categories}
 
 def merge_categorical(one, two, p=.5):
-  merged = defaultdict(float)
-  for c in one:
-    merged[c] += p*one[c]
-  for c in two:
-    merged[c] = (1-p)*two[c]
-  return merged
+    merged = defaultdict(float)
+    for c in one:
+        merged[c] += p*one[c]
+    for c in two:
+        merged[c] = (1-p)*two[c]
+    return merged
 
 def joint_categorical(one, two):
-  return {(x1, x2): p1*p2 for x1, p1 in one.items() for x2, p2 in two.items()}
+    return {(x1, x2): p1*p2 for x1, p1 in one.items() for x2, p2 in two.items()}
 
 def normalize_categorical(dist):
-  return {c: p/sum(dist.values()) for c, p in dist.items()}
+    return {c: p/sum(dist.values()) for c, p in dist.items()}
 
 def positive_hash(x):
-  return hash(x)%((sys.maxsize+1)*2)
+    return hash(x)%((sys.maxsize+1)*2)
