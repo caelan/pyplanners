@@ -39,6 +39,8 @@ def test_parent_operator(sink_vertex):
     # TODO: apply external functions
     if parent_op.test(parent_state):
         return True
+    parent_edge.cost = INF
+    sink_vertex.reset_path()
     return False
 
 def order_successors(successors, stack=False):

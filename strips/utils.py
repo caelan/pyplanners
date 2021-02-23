@@ -1,7 +1,7 @@
 from strips.ff import ff_fn, plan_cost, first_goals, h_ff_add, first_operators
 from strips.hsp import h_add, h_max
 from strips.operators import Action
-from misc.functions import in_add, INF
+from misc.functions import in_add, INF, randomize
 from planner.progression.best_first import best_first_search, deferred_best_first_search, \
     uniform, astar, wastar2, wastar3, greedy
 
@@ -24,11 +24,17 @@ def h_action(state, goal, operators):
 
 # TODO: filter out axioms
 
+def filter_axioms(actions):
+    return list(filter(lambda o: not o.is_axiom(), actions))
+
 def ha_all(state, goal, operators):
     return [o for o in operators if isinstance(o, Action)]
 
 def ha_applicable(state, goal, operators):
     return [operator for operator in ha_all(state, goal, operators) if state in operator]
+
+def ha_random(state, goal, operators):
+    return randomize(ha_applicable(state, goal, operators)) # ha_all | ha_applicable
 
 def ha_sorted(state, goal, operators):
     return sorted(ha_applicable(state, goal, operators), key=lambda o: o.cost)
@@ -44,14 +50,15 @@ def ha_combine(state, goal, operators, *helpful_actions):
 
 ###########################################################################
 
-def pair_h_and_ha(heuristic, helpful_actions):
-    return lambda s, g, o: (heuristic(s, g, o), helpful_actions(s, g, o))
+def pair_h_and_ha(heuristic_fn, helpful_actions_fn):
+    # TODO: real vs derived state per heuristic and helpful
+    return lambda s, g, o: (heuristic_fn(s, g, o), helpful_actions_fn(s, g, o))
 
-def combine_heuristics(*heuristics):
-    return lambda s, g, o: tuple(h(s, g, o) for h in heuristics)
+def combine_heuristics(*heuristic_fns):
+    return lambda s, g, o: tuple(h(s, g, o) for h in heuristic_fns)
 
-def combine_helpfuls(*helpfuls):
-    return lambda s, g, o: [a for ha in helpfuls for a in ha(s, g, o)]
+def combine_helpfuls(*helpful_fns):
+    return lambda s, g, o: [a for ha in helpful_fns for a in ha(s, g, o)]
 
 ###########################################################################
 
@@ -59,16 +66,13 @@ def combine_helpfuls(*helpfuls):
 # TODO: negative axioms
 # TODO: grounding function at all
 
-def filter_axioms(actions):
-    return list(filter(lambda o: not o.is_axiom(), actions))
-
-def single_generator(goal, operators, axioms, successors):
-    #return lambda v: (yield successors(v.state, goal, operators))
+def single_generator(goal, operators, axioms, combined_fn):
+    #return lambda v: (yield combined_fn(v.state, goal, operators))
     def generator(vertex):
         # TODO: a generator that regrounds at each state based on the current static facts
-        state = vertex.state
-        #state = vertex.derived_state # NOTE: not "safe"
-        heuristic, helpful_actions = successors(state, goal, operators + axioms)
+        state = vertex.state # TODO: might not be sufficient action applicability
+        #state = vertex.derived_state # NOTE: not "safe" (might falsely have infinite cost)
+        heuristic, helpful_actions = combined_fn(state, goal, operators + axioms)
         #helpful_actions = list(filter(lambda op: op not in axioms, helpful_actions))
         helpful_actions = filter_axioms(helpful_actions)
         # NOTE - the first_actions should be anything applicable in derived_state
@@ -101,7 +105,8 @@ HEURISTICS = {
 }
 
 SUCCESSORS = {
-    'all': ha_applicable, # ha_all | ha_applicable
+    'all': ha_all, # ha_all | ha_applicable
+    'random': ha_random,
     #'ff': first_goals, # first_operators # TODO: make a wrapper
 }
 

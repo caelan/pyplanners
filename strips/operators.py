@@ -57,7 +57,7 @@ class Operator(PartialState):
     __repr__ = __str__
 
 class Action(Operator): 
-    cost = 1
+    cost = 1 # TODO: cost function
 class Axiom(Operator): 
     cost = 0
 

@@ -81,14 +81,24 @@ class Vertex(object):
         for edge in self.incoming_edges:
             # TODO: propagate
             self.relax(edge)
+        for child in self.get_children():
+            child.reset_path()
+    # @property
+    # def cost(self):
+    #      if self.parent_edge is None:
+    #          return 0
+    #      return self.parent_edge.path_cost
     def relax(self, edge):
         assert edge.sink == self
         if edge.path_cost < self.cost:
+        #if edge.path_cost <= self.cost:
             self.cost = edge.path_cost
             self.length = edge.path_length
             self.parent_edge = edge
             return True
         return False
+    def get_children(self):
+        return [edge.sink for edge in self.outgoing_edges if edge.is_parent()]
     def contained(self, partial_state):
         #return self.state in partial_state
         return self.derived_state in partial_state
@@ -136,20 +146,23 @@ class Edge(object):
         self.sink = sink
         self.operator = operator
         self.state_space = state_space
+        self.cost = self.operator.cost
         self.source.outgoing_edges.append(self)
         self.sink.incoming_edges.append(self)
         self.sink.relax(self)
     @property
     def path_cost(self):
-        return self.source.cost + self.operator.cost
+        return self.source.cost + self.cost
     @property
     def path_length(self):
         return self.source.length + 1
+    def is_parent(self):
+        return self.sink.parent_edge == self
     # def delete(self):
     #     safe_remove(self.source.outgoing_edges, self)
     #     safe_remove(self.sink.incoming_edges, self)
     #     safe_remove(self.state_space.edges, self)
-    #     if self.sink.parent_edge == self:
+    #     if self.is_parent():
     #         # TODO: propagate
     #         self.sink.reset_path()
     def __str__(self):
