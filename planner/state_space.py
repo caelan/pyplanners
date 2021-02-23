@@ -1,12 +1,14 @@
 from collections import namedtuple
 
 from .operators import derive_predicates, MacroOperator
-from misc.functions import elapsed_time, safe_remove
+from misc.functions import elapsed_time, safe_remove, implies
 from misc.numerical import INF
 from misc.objects import str_line
 import time
 
 # TODO - can rewire state-space if found a better parent
+
+IS_SAFE = True # http://www.fast-downward.org/Doc/Evaluator
 
 Solution = namedtuple('Solution', ['plan', 'state_space'])
 
@@ -60,11 +62,18 @@ class Vertex(object):
         self.generator = state_space.generator_fn(self)
         self.incoming_edges = []
         self.outgoing_edges = []
-        self.extensions = 0
+        self.extensions = 0 # TODO: deprecate
         self.generations = 0
         self.explored = 0
         self.h_cost = None
         self.reset_path()
+    # @property
+    # def extensions(self):
+    #     return len(self.outgoing_edges)
+    @property
+    def num_unexplored(self):
+        #return self.extensions - self.explored
+        return len(self.outgoing_edges) - self.explored
     def reset_path(self):
         self.cost = INF # TODO: path_cost
         self.length = INF # TODO: path_length
@@ -88,7 +97,7 @@ class Vertex(object):
     def is_dead_end(self):
         assert self.h_cost is not None
         h = self.h_cost[0] if isinstance(self.h_cost, tuple) else self.h_cost
-        return h == INF
+        return IS_SAFE and (h == INF)
     def generate(self):
         if self.enumerated():
             return False  # TODO: change the semantics of this to be generated at least one new
@@ -108,7 +117,7 @@ class Vertex(object):
             new |= self.generate()
         return new
     def has_unexplored(self):
-        return self.explored < len(self.outgoing_edges)
+        return self.num_unexplored > 0
     def unexplored(self):
         while self.has_unexplored():
             self.explored += 1
@@ -117,7 +126,7 @@ class Vertex(object):
         #return '{}({})'.format(self.__class__.__name__, id(self))
         return 'h_cost: {self.h_cost} | cost: {self.cost} | length: {self.length} | ' \
                'generations: {self.generations} | unexplored: {unexplored}\n{self.state}'.format(
-            self=self, unexplored=(len(self.outgoing_edges)-self.explored))
+            self=self, unexplored=self.num_unexplored)
     __repr__ = __str__
 
 # TODO: lazily evaluate the next state
@@ -136,13 +145,13 @@ class Edge(object):
     @property
     def path_length(self):
         return self.source.length + 1
-    def delete(self):
-        safe_remove(self.source.outgoing_edges, self)
-        safe_remove(self.sink.incoming_edges, self)
-        safe_remove(self.state_space.edges, self)
-        if self.sink.parent_edge == self:
-            # TODO: propagate
-            self.sink.reset_path()
+    # def delete(self):
+    #     safe_remove(self.source.outgoing_edges, self)
+    #     safe_remove(self.sink.incoming_edges, self)
+    #     safe_remove(self.state_space.edges, self)
+    #     if self.sink.parent_edge == self:
+    #         # TODO: propagate
+    #         self.sink.reset_path()
     def __str__(self):
         return '{}({})'.format(self.__class__.__name__, self.operator)
     __repr__ = __str__

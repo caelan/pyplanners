@@ -59,13 +59,18 @@ def combine_helpfuls(*helpfuls):
 # TODO: negative axioms
 # TODO: grounding function at all
 
+def filter_axioms(actions):
+    return list(filter(lambda o: not o.is_axiom(), actions))
+
 def single_generator(goal, operators, axioms, successors):
     #return lambda v: (yield successors(v.state, goal, operators))
     def generator(vertex):
         # TODO: a generator that regrounds at each state based on the current static facts
-        heuristic, helpful_actions = successors(vertex.derived_state, goal, operators + axioms)
+        state = vertex.state
+        #state = vertex.derived_state # NOTE: not "safe"
+        heuristic, helpful_actions = successors(state, goal, operators + axioms)
         #helpful_actions = list(filter(lambda op: op not in axioms, helpful_actions))
-        helpful_actions = list(filter(lambda o: not o.is_axiom(), helpful_actions))
+        helpful_actions = filter_axioms(helpful_actions)
         # NOTE - the first_actions should be anything applicable in derived_state
         yield heuristic, helpful_actions
     return generator, axioms
@@ -110,7 +115,7 @@ def lookup_heuristic(heuristic):
     return HEURISTICS[heuristic]
 
 def solve_strips(initial, goal, operators, axioms=[], search='eager', evaluator='greedy',
-                 heuristic='ff', successors='ff', **kwargs):
+                 heuristic='ff', successors='all', **kwargs):
     search_fn = SEARCHES[search]
     evaluator_fn = EVALUATORS[evaluator]
     if heuristic == successors == 'ff':

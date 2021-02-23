@@ -145,3 +145,6 @@ def in_add(x, s):
     s.add(x)
     return False
   return True
+
+def implies(a, b):
+  return not a or b
