@@ -18,21 +18,7 @@ class HeapElement(object):
 
 ##################################################
 
-class Stack(object):
-  def __init__(self, array=[]):
-    self.stack = deque(array)
-  def peek(self):
-    return self.stack[0]
-  def push(self, _, element):
-    self.stack.appendleft(element)
-  def pop(self):
-    return self.stack.popleft()
-  def empty(self):
-    return len(self) == 0
-  def __len__(self):
-    return len(self.stack)
-
-class Queue(object):
+class Queue(object): # FIFO
   def __init__(self, array=[]):
     self.queue = deque(array)
   def peek(self):
@@ -45,6 +31,15 @@ class Queue(object):
     return len(self) == 0
   def __len__(self):
     return len(self.queue)
+  def __repr__(self):
+    return '{}{}'.format(self.__class__.__name__, list(self.queue))
+
+class Stack(Queue): # LIFO
+  @property
+  def stack(self):
+    return self.queue
+  def push(self, _, element):
+    self.stack.appendleft(element)
 
 ##################################################
 
@@ -71,6 +66,10 @@ class PriorityQueue(StableQueue):
     return len(self) == 0
   def __len__(self):
     return len(self.queue)
+  def __repr__(self):
+    #order = self.queue
+    order = sorted(self.queue)
+    return '{}{}'.format(self.__class__.__name__, order)
 
 class FIFOPriorityQueue(PriorityQueue):
   sign = 1

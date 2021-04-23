@@ -32,16 +32,7 @@ def test_parent_operator(sink_vertex):
     parent_edge = sink_vertex.parent_edge
     if parent_edge is None:
         return True
-    parent_op = parent_edge.operator
-    if not hasattr(parent_op, 'test'):
-        return True
-    parent_state = parent_edge.source.state
-    # TODO: apply external functions
-    if parent_op.test(parent_state):
-        return True
-    parent_edge.cost = INF
-    sink_vertex.reset_path()
-    return False
+    return parent_edge.evaluate_test()
 
 def order_successors(successors, stack=False):
     return reversed(successors) if stack else successors
@@ -96,7 +87,7 @@ def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
         if not cv.enumerated():
             successors.append(cv)
         for nv in order_successors(successors, stack):
-            nv.generate() # Also evaluates the h_cost
+            nv.evaluate() # nv.generate() # Also evaluates the h_cost
             if (not nv.is_dead_end()) and (lazy or test_parent_operator(nv)):
                 queue.push(priority(nv), nv)
     return state_space.failure()
@@ -109,7 +100,7 @@ def deferred_best_first_search(start, goal, generator, priority, stack=False,
             and (state_space.iterations < max_iterations):
         state_space.iterations += 1
         cv = queue.pop()
-        cv.generate()
+        nv.evaluate() # nv.generate()
         if cv.is_dead_end():
             continue
         if not test_parent_operator(cv): # always lazy

@@ -11,6 +11,7 @@ import time
 IS_SAFE = True # http://www.fast-downward.org/Doc/Evaluator
 
 Solution = namedtuple('Solution', ['plan', 'state_space'])
+Priority = namedtuple('Priority', ['cost', 'length'])
 
 class Plan(object):
     def __init__(self, start, operators):
@@ -24,6 +25,9 @@ class Plan(object):
     @property
     def length(self):
         return len(self.operators)
+    @property
+    def priority(self):
+        return Priority(self.cost, self.length)
     def __iter__(self):
         return iter(self.operators)
     def get_states(self):
@@ -60,6 +64,7 @@ class Vertex(object):
         self.derived_state, self.axiom_plan = derive_predicates(state, state_space.axioms)
         self.state_space = state_space
         self.generator = state_space.generator_fn(self)
+        self.operators = []
         self.incoming_edges = []
         self.outgoing_edges = []
         self.extensions = 0 # TODO: deprecate
@@ -79,7 +84,6 @@ class Vertex(object):
         self.length = INF # TODO: path_length
         self.parent_edge = None
         for edge in self.incoming_edges:
-            # TODO: propagate
             self.relax(edge)
         for child in self.get_children():
             child.reset_path()
@@ -88,12 +92,13 @@ class Vertex(object):
     #      if self.parent_edge is None:
     #          return 0
     #      return self.parent_edge.path_cost
+    @property
+    def priority(self):
+        return Priority(self.cost, self.length)
     def relax(self, edge):
         assert edge.sink == self
-        if edge.path_cost < self.cost:
-        #if edge.path_cost <= self.cost:
-            self.cost = edge.path_cost
-            self.length = edge.path_length
+        if edge.priority < self.priority:
+            self.cost, self.length = edge.priority
             self.parent_edge = edge
             return True
         return False
@@ -105,22 +110,33 @@ class Vertex(object):
     def enumerated(self):
         return (self.generator is None) or (self.state_space.max_generations <= self.generations)
     def is_dead_end(self):
+        # assumes the heuristic is safe
         assert self.h_cost is not None
         h = self.h_cost[0] if isinstance(self.h_cost, tuple) else self.h_cost
         return IS_SAFE and (h == INF)
-    def generate(self):
+    def evaluate(self):
         if self.enumerated():
             return False  # TODO: change the semantics of this to be generated at least one new
         try:
             self.h_cost, operators = next(self.generator)
+            self.operators.extend(operators)
             self.generations += 1
-            if not self.is_dead_end():
-                for operator in operators: # TODO - should states be expanded before the heuristic check?
-                    self.state_space.extend(self, operator)
-                return True # TODO - decide if to return true if still some unexplored (despite nothing new generated)
+            return True
         except StopIteration:
             self.generator = None
         return False
+    def extend(self):
+        if self.is_dead_end():
+            return []
+        operators = list(self.operators)
+        self.operators = []
+        for operator in operators:  # TODO - should states be expanded before the heuristic check?
+            self.state_space.extend(self, operator)
+        return operators  # TODO - decide if to return true if still some unexplored (despite nothing new generated)
+    def generate(self):
+        if not self.evaluate():
+            return False
+        return bool(self.extend())
     def generate_all(self):
         new = False
         while not self.enumerated():
@@ -129,33 +145,39 @@ class Vertex(object):
     def has_unexplored(self):
         return self.num_unexplored > 0
     def unexplored(self):
+        self.extend()
         while self.has_unexplored():
             self.explored += 1
             yield self.outgoing_edges[self.explored-1].sink
+    def dump(self):
+        print('h_cost: {self.h_cost} | cost: {self.cost} | length: {self.length} | '
+              'generations: {self.generations} | unexplored: {unexplored}\n{self.state}'.format(
+            self=self, unexplored=self.num_unexplored))
     def __str__(self):
         #return '{}({})'.format(self.__class__.__name__, id(self))
-        return 'h_cost: {self.h_cost} | cost: {self.cost} | length: {self.length} | ' \
-               'generations: {self.generations} | unexplored: {unexplored}\n{self.state}'.format(
-            self=self, unexplored=self.num_unexplored)
+        return '{}({})'.format(self.__class__.__name__, self.state)
     __repr__ = __str__
 
-# TODO: lazily evaluate the next state
 class Edge(object):
     def __init__(self, source, sink, operator, state_space):
         self.source = source
-        self.sink = sink
+        self.sink = sink # TODO: lazily evaluate the next state
         self.operator = operator
         self.state_space = state_space
-        self.cost = self.operator.cost
+        self.cost = self.operator.cost # TODO: attachments cost function
         self.source.outgoing_edges.append(self)
         self.sink.incoming_edges.append(self)
         self.sink.relax(self)
+        self.valid = None if hasattr(operator, 'test') else True
     @property
     def path_cost(self):
         return self.source.cost + self.cost
     @property
     def path_length(self):
         return self.source.length + 1
+    @property
+    def priority(self):
+        return Priority(self.path_cost, self.path_length)
     def is_parent(self):
         return self.sink.parent_edge == self
     # def delete(self):
@@ -165,6 +187,14 @@ class Edge(object):
     #     if self.is_parent():
     #         # TODO: propagate
     #         self.sink.reset_path()
+    def evaluate_test(self):
+        if self.valid is None:
+            # TODO: apply external functions
+            self.valid = bool(self.operator.test(self.source.state))
+            if not self.valid:
+                self.cost = INF
+                self.sink.reset_path()
+        return self.valid
     def __str__(self):
         return '{}({})'.format(self.__class__.__name__, self.operator)
     __repr__ = __str__
