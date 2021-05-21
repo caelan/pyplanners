@@ -100,7 +100,7 @@ def deferred_best_first_search(start, goal, generator, priority, stack=False,
             and (state_space.iterations < max_iterations):
         state_space.iterations += 1
         cv = queue.pop()
-        nv.evaluate() # nv.generate()
+        cv.evaluate() # cv.generate()
         if cv.is_dead_end():
             continue
         if not test_parent_operator(cv): # always lazy
