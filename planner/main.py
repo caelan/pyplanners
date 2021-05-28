@@ -10,6 +10,8 @@ def pause_debug(vertex):
   user_input('Hit enter to continue')
   print()
 
+###########################################################################
+
 def path_cost_fn(vertex):
   return vertex.cost
 

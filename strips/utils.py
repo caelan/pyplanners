@@ -2,6 +2,7 @@ from strips.ff import ff_fn, plan_cost, first_goals, h_ff_add, first_operators
 from strips.hsp import h_add, h_max
 from strips.operators import Action
 from misc.functions import in_add, INF, randomize
+from misc.utils import SEPARATOR
 from planner.progression.best_first import best_first_search, deferred_best_first_search, \
     uniform, astar, wastar2, wastar3, greedy
 
@@ -121,6 +122,9 @@ def lookup_heuristic(heuristic):
 
 def solve_strips(initial, goal, operators, axioms=[], search='eager', evaluator='greedy',
                  heuristic='ff', successors='all', **kwargs):
+    print('Initial: {}\nGoal: {}\nActions: {} | Axioms: {}'.format(initial, goal, len(operators), len(axioms)))
+    print('Search: {} | Evaluator: {} | Heuristic: {} | Successors: {}'.format(search, evaluator, heuristic, successors))
+    print(SEPARATOR)
     search_fn = SEARCHES[search]
     evaluator_fn = EVALUATORS[evaluator]
     if heuristic == successors == 'ff':
@@ -151,8 +155,8 @@ default_successors = ff_fn(plan_cost, first_goals, op=sum)
 default_search = lambda initial, goal, generator: best_first_search(
     initial, goal, generator, greedy, stack=False, lazy=True) # stack=True vs False can matter quite a bit
 
-def default_plan(initial, goal, operators, axioms=[]):
+def default_plan(initial, goal, operators, axioms=[], **kwargs):
     #return default_search(initial, goal, single_generator(goal, operators, axioms, default_successors))
-    return solve_strips(initial, goal, operators, axioms=axioms)
+    return solve_strips(initial, goal, operators, axioms=axioms, **kwargs)
 
 default_derived_plan = default_plan

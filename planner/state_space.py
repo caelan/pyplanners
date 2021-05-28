@@ -52,7 +52,7 @@ class Plan(object):
     def __str__(self):
         s = '{name} | Cost: {self.cost} | Length {self.length}'.format(name=self.__class__.__name__, self=self)
         for i, operator in enumerate(self.operators):
-            s += str_line('\n\n%d | '%(i+1), operator)
+            s += str_line('\n%d | '%(i+1), operator)
         return s
     __repr__ = __str__
 
@@ -119,7 +119,13 @@ class Vertex(object):
             return False  # TODO: change the semantics of this to be generated at least one new
         try:
             self.h_cost, operators = next(self.generator)
+            if (self.state_space.best_h is None) or (self.h_cost < self.state_space.best_h):
+                self.state_space.best_h = self.h_cost
+                self.state_space.dump()
             self.operators.extend(operators)
+            if self.generations == 0:
+                self.state_space.num_expanded += 1
+            self.state_space.num_generations += 1
             self.generations += 1
             return True
         except StopIteration:
@@ -202,9 +208,11 @@ class Edge(object):
 #################################################################
 
 class StateSpace(object):
-    def __init__(self, generator_fn, start, max_extensions=INF, max_generations=INF, max_cost=INF, max_length=INF):
+    def __init__(self, generator_fn, start, max_extensions=INF, max_generations=INF, max_cost=INF, max_length=INF, verbose=True):
         self.start_time = time.time()
         self.iterations = 0
+        self.num_expanded = 0
+        self.num_generations = 0
         self.vertices = {}
         self.edges = [] # NOTE - allowing parallel-edges
         if isinstance(generator_fn, tuple): # TODO - fix this by making the operators a direct argument
@@ -216,10 +224,12 @@ class StateSpace(object):
         self.max_generations = max_generations
         self.max_cost = max_cost
         self.max_length = max_length
+        self.verbose = verbose
         self.root = self[start]
         self.root.cost = 0
         self.root.length = 0
         self.root.extensions += 1
+        self.best_h = None # None | INF
     def has_state(self, state):
         return state in self.vertices
     __contains__ = has_state
@@ -262,21 +272,21 @@ class StateSpace(object):
             return None
         return Plan(self.root.state, sequence)
     def solution(self, vertex):
+        self.dump()
         return Solution(self.plan(vertex), self)
     def failure(self):
+        self.dump()
         return Solution(None, self)
     def time_elapsed(self):
         return elapsed_time(self.start_time)
-    def num_expanded(self):
-        return sum(1 for v in self if v.generations > 0) # NOTE - can be very expensive for a large state space
-    def num_generations(self):
-        return sum(v.generations for v in self) # NOTE - can be very expensive for a large state space
-    def __repr__(self):
-        return 'Iterations: {iterations} | Time: {time} | State Space: {state_space}\n'.format(
-            iterations=self.iterations, time=round(self.time_elapsed(), 3), state_space=len(self))
     #def __repr__(self):
-    #  return 'Iterations: {iterations} | Time: {time} | State Space: {state_space} | Expanded: {expanded} | ' \
-    #        'Generations: {generations}\n'.format(iterations=self.iterations,
-    #        time=round(self.time_elapsed(), 3), state_space=len(self),
-    #        expanded=self.num_expanded(),
-    #        generations=self.num_generations())
+    #    return 'Iterations: {iterations} | State Space: {state_space} | Heuristic: {heuristic} | Time: {time:.3f}\n'.format(
+    #        iterations=self.iterations, state_space=len(self), heuristic=self.best_h, time=self.time_elapsed())
+    def __repr__(self):
+     return 'Iterations: {iterations} | State Space: {state_space} | Expanded: {expanded} | ' \
+            'Generations: {generations} | Heuristic: {heuristic} | Time: {time:.3f}'.format(
+         iterations=self.iterations, state_space=len(self), expanded=self.num_expanded,
+         generations=self.num_generations, heuristic=self.best_h, time=self.time_elapsed())
+    def dump(self):
+        if self.verbose:
+            print(self)

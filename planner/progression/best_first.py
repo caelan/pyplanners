@@ -67,6 +67,7 @@ def a_star_search(start, goal, generator, priority, stack=False,
 
 def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
                       max_time=INF, max_iterations=INF, debug=None, **kwargs):
+    # TODO: anytime mode
     state_space = StateSpace(generator, start, max_extensions=INF, **kwargs) # TODO: max_extensions=1 can fail when test
     sv = state_space.root
     sv.generate()

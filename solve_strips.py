@@ -9,6 +9,7 @@ from misc.profiling import run_profile
 from misc.functions import randomize, elapsed_time
 from misc.utils import SEPARATOR
 from strips.utils import default_plan
+from planner.main import simple_debug, pause_debug
 import strips.domains as domains
 
 DIRECTORY = './simulations/strips/planning/'
@@ -19,12 +20,12 @@ def solve(problem, print_profile):
     #dt = datetime.datetime.now()
     #directory = DIRECTORY + '{}/{}/{}/'.format(problem.__name__,
     # dt.strftime('%Y-%m-%d'), dt.strftime('%H-%M-%S'))
-    print(SEPARATOR + '\nSolving strips problem ' + problem.__name__)
+    print('Solving strips problem ' + problem.__name__ + '\n' + SEPARATOR)
 
     def execute():
         start_time = time()
         try:
-            output = default_plan(initial, goal, randomize(operators))
+            output = default_plan(initial, goal, randomize(operators), debug=None) # None | simple_debug
         except KeyboardInterrupt:
             output = None, elapsed_time(start_time)
         #make_dir(directory)
@@ -53,6 +54,7 @@ def main():
     parser.add_argument('-p', '--problem', default='restack_blocks')
     parser.add_argument('-q', '--profile', action='store_true')
     args = parser.parse_args()
+    print(args)
 
     if hasattr(domains, args.problem):
         problem = getattr(domains, args.problem)
