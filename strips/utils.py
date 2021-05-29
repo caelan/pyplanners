@@ -141,6 +141,7 @@ def solve_strips(initial, goal, operators, axioms=[], search='eager', evaluator=
         else:
             successor_fn = combine_helpfuls(*successors)
         combined_fn = pair_h_and_ha(heuristic_fn, successor_fn)
+    # TODO: default to using the order in operators
     generator_fn = single_generator(goal, operators, axioms, combined_fn)
     return search_fn(initial, goal, generator_fn, evaluator_fn, **kwargs)
 

@@ -208,13 +208,15 @@ class Edge(object):
 #################################################################
 
 class StateSpace(object):
-    def __init__(self, generator_fn, start, max_extensions=INF, max_generations=INF, max_cost=INF, max_length=INF, verbose=True):
+    def __init__(self, generator_fn, start, max_extensions=INF, max_generations=INF, max_cost=INF, max_length=INF,
+                 verbose=True, dump_rate=1.): # 0 | 1 | INF
         self.start_time = time.time()
         self.iterations = 0
         self.num_expanded = 0
         self.num_generations = 0
         self.vertices = {}
         self.edges = [] # NOTE - allowing parallel-edges
+        #self.solutions = []
         if isinstance(generator_fn, tuple): # TODO - fix this by making the operators a direct argument
             self.generator_fn, self.axioms = generator_fn
         else:
@@ -225,6 +227,8 @@ class StateSpace(object):
         self.max_cost = max_cost
         self.max_length = max_length
         self.verbose = verbose
+        self.dump_rate = dump_rate
+        self.last_dump = time.time()
         self.root = self[start]
         self.root.cost = 0
         self.root.length = 0
@@ -242,6 +246,11 @@ class StateSpace(object):
         return iter(self.vertices.values())
     def __len__(self):
         return len(self.vertices)
+    def new_iteration(self, vertex):
+        self.iterations += 1
+        if elapsed_time(self.last_dump) >= self.dump_rate:
+            self.dump()
+        return vertex.is_dead_end() # TODO: record dead ends
     def extend(self, vertex, operator):
         if (vertex.cost + operator.cost <= self.max_cost) \
                 and (vertex.length + len(operator) <= self.max_length) \
@@ -272,21 +281,22 @@ class StateSpace(object):
             return None
         return Plan(self.root.state, sequence)
     def solution(self, vertex):
-        self.dump()
+        #self.dump()
         return Solution(self.plan(vertex), self)
     def failure(self):
         self.dump()
         return Solution(None, self)
     def time_elapsed(self):
         return elapsed_time(self.start_time)
-    #def __repr__(self):
-    #    return 'Iterations: {iterations} | State Space: {state_space} | Heuristic: {heuristic} | Time: {time:.3f}\n'.format(
-    #        iterations=self.iterations, state_space=len(self), heuristic=self.best_h, time=self.time_elapsed())
     def __repr__(self):
-     return 'Iterations: {iterations} | State Space: {state_space} | Expanded: {expanded} | ' \
-            'Generations: {generations} | Heuristic: {heuristic} | Time: {time:.3f}'.format(
-         iterations=self.iterations, state_space=len(self), expanded=self.num_expanded,
-         generations=self.num_generations, heuristic=self.best_h, time=self.time_elapsed())
+     # TODO: deadends, backtracking, expanded/generated until last jump, etc.
+        return 'Iterations: {iterations} | State Space: {state_space} | Expanded: {expanded} | ' \
+               'Generations: {generations} | Heuristic: {heuristic} | Time: {time:.3f}'.format(
+            iterations=self.iterations, state_space=len(self), expanded=self.num_expanded,
+            generations=self.num_generations, heuristic=self.best_h, time=self.time_elapsed())
     def dump(self):
-        if self.verbose:
-            print(self)
+        if not self.verbose:
+            return
+        self.last_dump = time.time()
+        print(self)
+        # TODO: record iterations since last heuristic
