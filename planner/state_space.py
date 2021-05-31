@@ -210,6 +210,7 @@ class Edge(object):
 class StateSpace(object):
     def __init__(self, generator_fn, start, max_extensions=INF, max_generations=INF, max_cost=INF, max_length=INF,
                  verbose=True, dump_rate=1.): # 0 | 1 | INF
+        # TODO: max_time, max_iterations, is_active
         self.start_time = time.time()
         self.iterations = 0
         self.num_expanded = 0
