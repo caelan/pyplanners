@@ -1,5 +1,6 @@
 from random import random, randint, choice
 
+# TODO: Monte-Carlo Tree Search
 DEFAULT_GOAL_PROBABILITY = 0.1
 
 

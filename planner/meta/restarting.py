@@ -1,2 +1,2 @@
 def restarting(start, goal, search):
-  pass
+  raise NotImplementedError()

@@ -1,4 +1,6 @@
 from state_expanders import *
+from strips.states import State, PartialState
+from misc.functions import some
 
 # TODO
 # - Replanning

@@ -1,5 +1,4 @@
-from planner.state_space import test_goal, test_parent_operator
-from ..state_space import StateSpace
+from planner.state_space import test_goal, test_parent_operator, StateSpace
 from misc.numerical import INF
 from misc.priority_queue import FIFOClassicPriorityQueue, FILOClassicPriorityQueue, FIFOPriorityQueue, FILOPriorityQueue
 

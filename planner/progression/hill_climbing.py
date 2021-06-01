@@ -5,7 +5,6 @@ from ..operators import MacroOperator
 from misc.utils import in_add, chain
 from misc.objects import enum
 from misc.numerical import INF
-from misc.functions import elapsed_time
 
 # TODO
 # - Optimal variant that finds 1 or more plans, and WPS off those paths to find a low cost path
@@ -20,7 +19,7 @@ strategies = enum('LOCAL', 'REVERSE', 'START', 'SEQUENCE')
 
 
 def hill_climbing_search(start, goal, generator, _, cost_step=1, strategy=strategies.LOCAL, recurrence=1, steepest=True,
-                         max_time=INF, max_iterations=INF, debug=INF, **kwargs):
+                         debug=INF, **kwargs):
     space = StateSpace(generator, start, INF, **kwargs)  # NOTE - max_extensions needs to be INF
 
     def negative_gradient(cost1, cost2):
@@ -37,7 +36,7 @@ def hill_climbing_search(start, goal, generator, _, cost_step=1, strategy=strate
                 if nv.h_cost is not None:
                     queue.append(nv)
 
-        while queue and elapsed_time(space.start_time) and (space.iterations < max_iterations):
+        while queue and space.is_active():
             cv = queue.popleft()
             cv.pops += 1
             if (cv.pops - 1) % recurrence != 0:
@@ -77,7 +76,7 @@ def hill_climbing_search(start, goal, generator, _, cost_step=1, strategy=strate
         return space.solution(sv)
     if not sv.generate():
         return space.failure()
-    while (elapsed_time(space.start_time) < max_time) and (space.iterations < max_iterations):
+    while space.is_active():
         if debug is not None:
             print(50 * '-', '\n')
 
@@ -87,7 +86,8 @@ def hill_climbing_search(start, goal, generator, _, cost_step=1, strategy=strate
             vertices = [sv, space.root]
         elif strategy is strategies.SEQUENCE:
             path_operator = MacroOperator(*space.retrace(sv))
-            vertices = list(map(lambda s: space[s], path_operator(space.root.state)))[::-1]
+            path_sequence = path_operator(space.root.state)
+            vertices = list(map(lambda s: space[s], path_sequence))[::-1]
         else:
             raise RuntimeError('Invalid strategy: %s' % strategy)
 
