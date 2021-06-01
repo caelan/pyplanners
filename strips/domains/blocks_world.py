@@ -43,7 +43,7 @@ class Unstack(Action):
 def line_stack_blocks(n=10, height=5):
     height = max(height, 0)
     n = max(height, n)
-    blocks = ['Block' + str(i) for i in range(1, n+1)]
+    blocks = ['Block{}'.format(i) for i in range(1, n+1)]
 
     operators = [Pick(item) for item in blocks] + \
         [Place(item) for item in blocks] + \
@@ -62,7 +62,7 @@ def line_stack_blocks(n=10, height=5):
 def restack_blocks(n=10, height=5):
     height = max(height, 0)
     n = max(height, n)
-    blocks = ['Block' + str(i) for i in range(1, n+1)]
+    blocks = ['Block{}'.format(i) for i in range(1, n+1)]
 
     operators = [Pick(item) for item in blocks] + \
         [Place(item) for item in blocks] + \
@@ -78,3 +78,10 @@ def restack_blocks(n=10, height=5):
                         {On(obj, under_obj) for under_obj, obj in pairs(blocks[:height])})
 
     return initial, goal, operators
+
+###########################################################################
+
+PROBLEMS = [
+    line_stack_blocks,
+    restack_blocks,
+]

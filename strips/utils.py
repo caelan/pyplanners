@@ -3,8 +3,8 @@ from strips.hsp import h_add, h_max
 from strips.operators import Action
 from misc.functions import in_add, INF, randomize
 from misc.utils import SEPARATOR
-from planner.progression.best_first import best_first_search, deferred_best_first_search, \
-    uniform, astar, wastar2, wastar3, greedy
+from planner.progression.best_first import a_star_search, best_first_search, deferred_best_first_search, \
+    uniform, astar, wastar2, wastar3, greedy, bfs
 from planner.progression.hill_climbing import hill_climbing_search
 
 
@@ -84,7 +84,7 @@ def single_generator(goal, operators, axioms, combined_fn):
 ###########################################################################
 
 SEARCHES = {
-    #'astar': best_first_search,
+    'a_star': a_star_search,
     'eager': best_first_search,
     'lazy': deferred_best_first_search,
     'hill_climbing': hill_climbing_search,
@@ -92,7 +92,8 @@ SEARCHES = {
 
 # TODO: populate programmatically
 EVALUATORS = {
-    'dijkstra': uniform,
+    'bfs': bfs,
+    'uniform': uniform,
     'astar': astar,
     'wastar2': wastar2,
     'wastar3': wastar3,

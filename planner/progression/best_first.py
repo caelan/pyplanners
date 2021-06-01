@@ -1,38 +1,25 @@
+from planner.state_space import test_goal, test_parent_operator
 from ..state_space import StateSpace
 from misc.numerical import INF
-from misc.functions import reverse, elapsed_time
 from misc.priority_queue import FIFOClassicPriorityQueue, FILOClassicPriorityQueue, FIFOPriorityQueue, FILOPriorityQueue
 
 # TODO - Update the shortest path using Bellman-Ford if find shorter path to previously visited state
-# NOTE - Best first searches with infinite branching factors are not complete. Need to use iterative deepening on max_expansions and max_length
+# NOTE - Best first searches with infinite branching factors are not complete.
+# Need to use iterative deepening on max_expansions and max_length
 
-def weighted(weight):
+def weighted(weight=1):
     # TODO: could recover the parent's heuristic value for deferred evaluation
     if weight == INF:
         return lambda v: v.h_cost
-    return lambda v: v.cost + weight * v.h_cost
+    return lambda v: v.cost + (weight * v.h_cost)
 
+bfs = lambda v: 1
 uniform = weighted(0)
 astar = weighted(1)
 wastar2 = weighted(2)
-wastar3 = weighted(2)
+wastar3 = weighted(3) # TODO: create programmatically
 greedy = weighted(INF)
 lexicographic = lambda v: (v.h_cost, v.cost)
-
-###########################################################################
-
-def test_goal(vertex, goal):
-    if not vertex.contained(goal):
-        return False
-    if not hasattr(goal, 'test'):
-        return True
-    return goal.test(vertex.state)
-
-def test_parent_operator(sink_vertex):
-    parent_edge = sink_vertex.parent_edge
-    if parent_edge is None:
-        return True
-    return parent_edge.evaluate_test()
 
 def order_successors(successors, stack=False):
     return reversed(successors) if stack else successors
@@ -40,8 +27,8 @@ def order_successors(successors, stack=False):
 ###########################################################################
 
 def a_star_search(start, goal, generator, priority, stack=False, debug=None, **kwargs):
-    # TODO: lazy a_star
-    # TODO: update to use test_parent_operator
+    # TODO: anytime mode
+    # TODO: lazy A*
     space = StateSpace(generator, start, max_extensions=INF, **kwargs)
     sv = space.root
     if sv.contained(goal):
@@ -50,6 +37,7 @@ def a_star_search(start, goal, generator, priority, stack=False, debug=None, **k
         return space.failure()
     queue = (FILOClassicPriorityQueue if stack else FIFOClassicPriorityQueue)([(priority(sv), sv)])
     while not queue.empty() and space.is_active():
+        # TODO: update to use test_parent_operator
         cv = queue.pop()
         space.new_iteration(cv)
         if debug is not None:
@@ -65,7 +53,6 @@ def a_star_search(start, goal, generator, priority, stack=False, debug=None, **k
     return space.failure()
 
 def best_first_search(start, goal, generator, priority, stack=False, lazy=True, debug=None, **kwargs):
-    # TODO: anytime mode
     space = StateSpace(generator, start, max_extensions=INF, **kwargs) # TODO: max_extensions=1 can fail when test
     sv = space.root
     sv.generate()

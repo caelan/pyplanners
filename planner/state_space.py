@@ -58,6 +58,20 @@ class Plan(object):
 
 #################################################################
 
+def test_goal(vertex, goal):
+    if not vertex.contained(goal):
+        return False
+    if not hasattr(goal, 'test'):
+        return True
+    return goal.test(vertex.state)
+
+
+def test_parent_operator(sink_vertex):
+    parent_edge = sink_vertex.parent_edge
+    if parent_edge is None:
+        return True
+    return parent_edge.evaluate_test()
+
 class Vertex(object):
     def __init__(self, state, state_space):
         self.state = state
