@@ -5,6 +5,7 @@ from misc.functions import in_add, INF, randomize
 from misc.utils import SEPARATOR
 from planner.progression.best_first import best_first_search, deferred_best_first_search, \
     uniform, astar, wastar2, wastar3, greedy
+from planner.progression.hill_climbing import hill_climbing_search
 
 
 def h_blind(state, goal, operators):
@@ -86,6 +87,7 @@ SEARCHES = {
     #'astar': best_first_search,
     'eager': best_first_search,
     'lazy': deferred_best_first_search,
+    'hill_climbing': hill_climbing_search,
 }
 
 # TODO: populate programmatically
@@ -120,7 +122,7 @@ def lookup_heuristic(heuristic):
         raise RuntimeError('Unknown heuristic: {}'.format(heuristic))
     return HEURISTICS[heuristic]
 
-def solve_strips(initial, goal, operators, axioms=[], search='eager', evaluator='greedy',
+def solve_strips(initial, goal, operators, axioms=[], search='hill_climbing', evaluator='greedy',
                  heuristic='ff', successors='all', **kwargs):
     print('Initial: {}\nGoal: {}\nActions: {} | Axioms: {}'.format(initial, goal, len(operators), len(axioms)))
     print('Search: {} | Evaluator: {} | Heuristic: {} | Successors: {}'.format(search, evaluator, heuristic, successors))
