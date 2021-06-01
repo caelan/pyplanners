@@ -1,3 +1,4 @@
+from collections import namedtuple
 from misc.objects import str_object
 
 class Literal(object):
@@ -79,3 +80,5 @@ class PartialState(object):
     def __str__(self):
         return self.__class__.__name__ + str_object(self.conditions)
     __repr__ = __str__
+
+STRIPSProblem = namedtuple('STRIPSProblem', ['initial', 'goal', 'operators'])

@@ -6,6 +6,7 @@ from misc.utils import SEPARATOR
 from planner.progression.best_first import a_star_search, best_first_search, deferred_best_first_search, \
     uniform, astar, wastar2, wastar3, greedy, bfs
 from planner.progression.hill_climbing import hill_climbing_search
+from planner.progression.mcts import mcts, random_walk
 
 
 def h_blind(state, goal, operators):
@@ -84,10 +85,13 @@ def single_generator(goal, operators, axioms, combined_fn):
 ###########################################################################
 
 SEARCHES = {
+    # TODO: make the key be the function name
     'a_star': a_star_search,
     'eager': best_first_search,
     'lazy': deferred_best_first_search,
     'hill_climbing': hill_climbing_search,
+    'random_walk': random_walk,
+    'mcts': mcts,
 }
 
 # TODO: populate programmatically

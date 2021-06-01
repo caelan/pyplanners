@@ -1,5 +1,5 @@
 from strips.operators import Action
-from strips.states import State, PartialState, Literal
+from strips.states import State, PartialState, Literal, STRIPSProblem
 from misc.utils import arg_info, currentframe
 from misc.functions import pairs
 from itertools import permutations
@@ -54,12 +54,13 @@ def line_stack_blocks(n=10, height=5):
                     {Clear(block) for block in blocks} |
                     {ArmEmpty()})
 
+    tower = blocks[:height]
     goal = PartialState({OnTable(blocks[0]), ArmEmpty()} |
-                        {On(obj, under_obj) for under_obj, obj in pairs(blocks[:height])})
+                        {On(obj, under_obj) for under_obj, obj in pairs(tower)})
 
-    return initial, goal, operators
+    return STRIPSProblem(initial, goal, operators)
 
-def restack_blocks(n=10, height=5):
+def restack_blocks(n=4, height=4):
     height = max(height, 0)
     n = max(height, n)
     blocks = ['Block{}'.format(i) for i in range(1, n+1)]
@@ -69,15 +70,17 @@ def restack_blocks(n=10, height=5):
         [Unstack(*item) for item in permutations(blocks, 2)] + \
         [Stack(*item) for item in permutations(blocks, 2)]
 
+    tower = blocks[:height]
+    table = blocks[height:]
     initial = State({OnTable(blocks[height-1]), ArmEmpty(), Clear(blocks[0])} |
-                    {On(obj, under_obj) for under_obj, obj in pairs(blocks[:height][::-1])} |
-                    {OnTable(block) for block in blocks[height:]} |
-                    {Clear(block) for block in blocks[height:]})
+                    {On(obj, under_obj) for under_obj, obj in pairs(tower[::-1])} |
+                    {OnTable(block) for block in table} |
+                    {Clear(block) for block in table})
 
     goal = PartialState({OnTable(blocks[0]), ArmEmpty()} |
-                        {On(obj, under_obj) for under_obj, obj in pairs(blocks[:height])})
+                        {On(obj, under_obj) for under_obj, obj in pairs(tower)})
 
-    return initial, goal, operators
+    return STRIPSProblem(initial, goal, operators)
 
 ###########################################################################
 

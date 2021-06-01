@@ -125,7 +125,7 @@ class Vertex(object):
         return (self.generator is None) or (self.state_space.max_generations <= self.generations)
     def is_dead_end(self):
         # assumes the heuristic is safe
-        assert self.h_cost is not None
+        assert self.h_cost is not None # TODO: call h_cost if haven't done so far
         h = self.h_cost[0] if isinstance(self.h_cost, tuple) else self.h_cost
         return IS_SAFE and (h == INF)
     def evaluate(self):
@@ -133,30 +133,30 @@ class Vertex(object):
             return False  # TODO: change the semantics of this to be generated at least one new
         try:
             self.h_cost, operators = next(self.generator)
-            if (self.state_space.best_h is None) or (self.h_cost < self.state_space.best_h):
-                self.state_space.best_h = self.h_cost
-                self.state_space.dump()
-            self.operators.extend(operators)
-            if self.generations == 0:
-                self.state_space.num_expanded += 1
-            self.state_space.num_generations += 1
-            self.generations += 1
-            return True
         except StopIteration:
             self.generator = None
-        return False
-    def extend(self):
-        if self.is_dead_end():
-            return []
+            return False
+        if (self.state_space.best_h is None) or (self.h_cost < self.state_space.best_h):
+            self.state_space.best_h = self.h_cost
+            self.state_space.dump()
+        self.operators.extend(operators)
+        if self.generations == 0:
+            self.state_space.num_expanded += 1
+        self.state_space.num_generations += 1
+        self.generations += 1
+        return True
+    def extend_state_space(self):
         operators = list(self.operators)
         self.operators = []
+        if self.is_dead_end():
+            return []
         for operator in operators:  # TODO - should states be expanded before the heuristic check?
             self.state_space.extend(self, operator)
         return operators  # TODO - decide if to return true if still some unexplored (despite nothing new generated)
     def generate(self):
         if not self.evaluate():
             return False
-        return bool(self.extend())
+        return bool(self.extend_state_space())
     def generate_all(self):
         new = False
         while not self.enumerated():
@@ -165,7 +165,7 @@ class Vertex(object):
     def has_unexplored(self):
         return self.num_unexplored > 0
     def unexplored(self):
-        self.extend()
+        self.extend_state_space()
         while self.has_unexplored():
             self.explored += 1
             yield self.outgoing_edges[self.explored-1].sink
@@ -267,7 +267,8 @@ class StateSpace(object):
         self.iterations += 1
         if elapsed_time(self.last_dump) >= self.dump_rate:
             self.dump()
-        return vertex.is_dead_end() # TODO: record dead ends
+        # TODO: record dead ends here
+        #return vertex.is_dead_end() # TODO: might not have called h_cost
     def is_active(self):
         return (elapsed_time(self.start_time) < self.max_time) or (self.iterations < self.max_iterations)
     def extend(self, vertex, operator):

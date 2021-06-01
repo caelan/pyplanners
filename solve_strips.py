@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import argparse
+import random
 
 from time import time
 from misc.profiling import run_profile, str_profile
@@ -62,8 +63,13 @@ def main():
                         default='ff', choices=sorted(HEURISTICS), help='')
     parser.add_argument('-suc', '--successors', type=str,
                         default='all', choices=sorted(SUCCESSORS), help='')
+    parser.add_argument('-seed', '--seed', default=None, help='')
     args = parser.parse_args()
     print(args)
+
+    random.seed(args.seed)
+    print('Random seed:', args.seed)
+    print('Random value:', random.random())
 
     if hasattr(domains, args.problem):
         problem = getattr(domains, args.problem)
