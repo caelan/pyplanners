@@ -14,7 +14,7 @@ import strips.domains as domains
 
 DIRECTORY = './simulations/strips/planning/'
 
-def solve(problem, print_profile):
+def solve_strips(problem, print_profile=False):
     initial, goal, operators = problem()
 
     #dt = datetime.datetime.now()
@@ -25,7 +25,8 @@ def solve(problem, print_profile):
     def execute():
         start_time = time()
         try:
-            output = default_plan(initial, goal, randomize(operators), debug=None) # None | simple_debug
+            output = default_plan(initial, goal, randomize(operators), search='eager', evaluator='greedy',
+                 heuristic='ff', successors='all', debug=None) # None | simple_debug
         except KeyboardInterrupt:
             output = None, elapsed_time(start_time)
         #make_dir(directory)
@@ -51,6 +52,8 @@ def solve(problem, print_profile):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--search', type=str,
+                        default='eager', choices=['msn', 'atlas'], help='')
     parser.add_argument('-p', '--problem', default='restack_blocks')
     parser.add_argument('-q', '--profile', action='store_true')
     args = parser.parse_args()
@@ -61,7 +64,7 @@ def main():
     else:
         print(args.problem, 'is not a valid problem')
         return
-    solve(problem, args.profile)
+    solve_strips(problem, args.profile) #, search=args.search)
 
 if __name__ == '__main__':
     main()

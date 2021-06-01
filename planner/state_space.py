@@ -209,8 +209,8 @@ class Edge(object):
 
 class StateSpace(object):
     def __init__(self, generator_fn, start, max_extensions=INF, max_generations=INF, max_cost=INF, max_length=INF,
-                 verbose=True, dump_rate=1.): # 0 | 1 | INF
-        # TODO: max_time, max_iterations, is_active
+                 max_time=INF, max_iterations=INF, verbose=True, dump_rate=1.): # 0 | 1 | INF
+        # TODO: move queue here?
         self.start_time = time.time()
         self.iterations = 0
         self.num_expanded = 0
@@ -227,6 +227,8 @@ class StateSpace(object):
         self.max_generations = max_generations
         self.max_cost = max_cost
         self.max_length = max_length
+        self.max_time = max_time
+        self.max_iterations = max_iterations
         self.verbose = verbose
         self.dump_rate = dump_rate
         self.last_dump = time.time()
@@ -252,6 +254,8 @@ class StateSpace(object):
         if elapsed_time(self.last_dump) >= self.dump_rate:
             self.dump()
         return vertex.is_dead_end() # TODO: record dead ends
+    def is_active(self):
+        return (elapsed_time(self.start_time) < self.max_time) or (self.iterations < self.max_iterations)
     def extend(self, vertex, operator):
         if (vertex.cost + operator.cost <= self.max_cost) \
                 and (vertex.length + len(operator) <= self.max_length) \

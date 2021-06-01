@@ -1,4 +1,3 @@
-from time import time
 from collections import deque
 
 from ..state_space import StateSpace
@@ -22,13 +21,13 @@ strategies = enum('LOCAL', 'REVERSE', 'START', 'SEQUENCE')
 
 def hill_climbing_search(start, goal, generator, _, cost_step=1, strategy=strategies.LOCAL, recurrence=1, steepest=True,
                          max_time=INF, max_iterations=INF, debug=INF, **kwargs):
-    state_space = StateSpace(generator, start, INF, **kwargs)  # NOTE - max_extensions needs to be INF
+    space = StateSpace(generator, start, INF, **kwargs)  # NOTE - max_extensions needs to be INF
 
     def negative_gradient(cost1, cost2):
         if cost_step is None:
             return cost1 < cost2
         cost = cost1 if type(cost1) not in [tuple, list] else cost1[0]
-        return cost not in (None, INF) and (cost <= (cost2 - cost_step))
+        return cost not in [None, INF] and (cost <= (cost2 - cost_step))
 
     def local_search(vertices, h_cost):
         queue, reached = deque(), set()
@@ -37,13 +36,14 @@ def hill_climbing_search(start, goal, generator, _, cost_step=1, strategy=strate
                 nv.pops, nv.explored = 0, 0
                 if nv.h_cost is not None:
                     queue.append(nv)
-        while queue and elapsed_time(state_space.start_time) and (state_space.iterations < max_iterations):
+
+        while queue and elapsed_time(space.start_time) and (space.iterations < max_iterations):
             cv = queue.popleft()
             cv.pops += 1
             if (cv.pops - 1) % recurrence != 0:
                 queue.append(cv)
                 continue
-            state_space.iterations += 1
+            space.iterations += 1
             if debug is not None:
                 debug(cv)
 
@@ -72,22 +72,22 @@ def hill_climbing_search(start, goal, generator, _, cost_step=1, strategy=strate
 
     ###########################################################################
 
-    sv = state_space.root
+    sv = space.root
     if sv.contained(goal):
-        return state_space.plan(sv), state_space
+        return space.solution(sv)
     if not sv.generate():
-        return None, state_space
-    while (elapsed_time(state_space.start_time) < max_time) and (state_space.iterations < max_iterations):
+        return space.failure()
+    while (elapsed_time(space.start_time) < max_time) and (space.iterations < max_iterations):
         if debug is not None:
             print(50 * '-', '\n')
 
         if strategy in [strategies.LOCAL, strategies.REVERSE]:
             vertices = [sv]
         elif strategy is strategies.START:
-            vertices = [sv, state_space.root]
+            vertices = [sv, space.root]
         elif strategy is strategies.SEQUENCE:
-            path_operator = MacroOperator(*state_space.retrace(sv))
-            vertices = list(map(lambda s: state_space[s], path_operator(state_space.root.state)))[::-1]
+            path_operator = MacroOperator(*space.retrace(sv))
+            vertices = list(map(lambda s: space[s], path_operator(space.root.state)))[::-1]
         else:
             raise RuntimeError('Invalid strategy: %s' % strategy)
 
@@ -95,5 +95,5 @@ def hill_climbing_search(start, goal, generator, _, cost_step=1, strategy=strate
         if sv is None:
             break
         if sv.contained(goal):
-            return state_space.plan(sv), state_space
-    return None, state_space
+            return space.solution(sv)
+    return space.failure()

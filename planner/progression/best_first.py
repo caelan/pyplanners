@@ -39,8 +39,8 @@ def order_successors(successors, stack=False):
 
 ###########################################################################
 
-def a_star_search(start, goal, generator, priority, stack=False,
-                  max_time=INF, max_iterations=INF, debug=None, **kwargs):
+def a_star_search(start, goal, generator, priority, stack=False, debug=None, **kwargs):
+    # TODO: lazy a_star
     # TODO: update to use test_parent_operator
     space = StateSpace(generator, start, max_extensions=INF, **kwargs)
     sv = space.root
@@ -49,8 +49,7 @@ def a_star_search(start, goal, generator, priority, stack=False,
     if not sv.generate():
         return space.failure()
     queue = (FILOClassicPriorityQueue if stack else FIFOClassicPriorityQueue)([(priority(sv), sv)])
-    while not queue.empty() and (elapsed_time(space.start_time) < max_time) \
-            and (space.iterations < max_iterations):
+    while not queue.empty() and space.is_active():
         cv = queue.pop()
         space.new_iteration(cv)
         if debug is not None:
@@ -65,8 +64,7 @@ def a_star_search(start, goal, generator, priority, stack=False,
                 queue.decrease_key(priority(nv), nv)
     return space.failure()
 
-def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
-                      max_time=INF, max_iterations=INF, debug=None, **kwargs):
+def best_first_search(start, goal, generator, priority, stack=False, lazy=True, debug=None, **kwargs):
     # TODO: anytime mode
     space = StateSpace(generator, start, max_extensions=INF, **kwargs) # TODO: max_extensions=1 can fail when test
     sv = space.root
@@ -74,8 +72,7 @@ def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
     if sv.is_dead_end(): # tests for an infinite (safe) heuristic value
         return space.failure()
     queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(priority(sv), sv)])
-    while not queue.empty() and (elapsed_time(space.start_time) < max_time) \
-            and (space.iterations < max_iterations):
+    while not queue.empty() and space.is_active():
         cv = queue.pop()
         space.new_iteration(cv)
         if lazy and not test_parent_operator(cv):
@@ -93,12 +90,10 @@ def best_first_search(start, goal, generator, priority, stack=False, lazy=True,
                 queue.push(priority(nv), nv)
     return space.failure()
 
-def deferred_best_first_search(start, goal, generator, priority, stack=False,
-                               max_time=INF, max_iterations=INF, debug=None, **kwargs):
+def deferred_best_first_search(start, goal, generator, priority, stack=False, debug=None, **kwargs):
     space = StateSpace(generator, start, max_extensions=INF, **kwargs) # TODO: max_extensions=1 can fail when test
     queue = (FILOPriorityQueue if stack else FIFOPriorityQueue)([(None, space.root)])
-    while not queue.empty() and (elapsed_time(space.start_time) < max_time) \
-            and (space.iterations < max_iterations):
+    while not queue.empty() and space.is_active():
         cv = queue.pop()
         cv.evaluate() # cv.generate()
         space.new_iteration(cv)

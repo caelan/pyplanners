@@ -122,7 +122,7 @@ def lookup_heuristic(heuristic):
         raise RuntimeError('Unknown heuristic: {}'.format(heuristic))
     return HEURISTICS[heuristic]
 
-def solve_strips(initial, goal, operators, axioms=[], search='hill_climbing', evaluator='greedy',
+def solve_strips(initial, goal, operators, axioms=[], search='eager', evaluator='greedy',
                  heuristic='ff', successors='all', **kwargs):
     print('Initial: {}\nGoal: {}\nActions: {} | Axioms: {}'.format(initial, goal, len(operators), len(axioms)))
     print('Search: {} | Evaluator: {} | Heuristic: {} | Successors: {}'.format(search, evaluator, heuristic, successors))
