@@ -131,6 +131,8 @@ class Vertex(object):
         self.generate_all()
         return self.outgoing_edges
     def is_dead_end(self):
+        # if not self.get_successors():
+        #     return True
         # assumes the heuristic is safe
         assert self.h_cost is not None # TODO: call h_cost if haven't done so far
         h = self.h_cost[0] if isinstance(self.h_cost, tuple) else self.h_cost

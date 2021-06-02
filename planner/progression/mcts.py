@@ -54,9 +54,7 @@ def random_walk(start, goal, generator, _=None, policy=greedy_policy, debug=None
 
 ##################################################
 
-def uct(total_cost, num, parent, c=math.sqrt(2)):
-    # https://en.wikipedia.org/wiki/Monte_Carlo_tree_search
-    return float(total_cost) / num + c*math.sqrt(math.log(parent) / num)
+MAX_ROLLOUT = 100 # 100 | INF
 
 class TreeNode(object):
     def __init__(self, vertex, parent_edge=None, parent_node=None):
@@ -69,10 +67,17 @@ class TreeNode(object):
             self.parent_node.children.append(self)
     def is_leaf(self):
         return not bool(self.children)
+    def num_rollouts(self):
+        return len(self.rollouts)
     def get_estimate(self):
         if not self.rollouts:
             return INF
         return numpy.average(self.rollouts)
+    def get_uct(self, c=math.sqrt(2)):
+        if self.parent_node is None:
+            return self.get_estimate()
+        # https://en.wikipedia.org/wiki/Monte_Carlo_tree_search
+        return self.get_estimate() + c * math.sqrt(math.log(self.parent_node.num_rollouts()) / self.num_rollouts())
     def ancestors(self):
         if self.parent_node is None:
             return []
@@ -82,16 +87,34 @@ class TreeNode(object):
         for child in self.children:
             nodes.extend(child.descendants())
         return nodes
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.vertex)
+
+##################################################
+
+def goal_rollout(vertex, goal):
+    if test_goal(vertex, goal):
+        return 0
+    return 1
+
+def deadend_rollout(vertex, goal):
+    if test_goal(vertex, goal):
+        return 0
+    if not vertex.get_successors():
+        return MAX_ROLLOUT
+    return 1
+
+def heuristic_rollout(vertex):
+    return vertex.get_h_cost()
+
+##################################################
 
 def mcts(start, goal, generator, _=None, debug=None, **kwargs):
-    # TODO: dynamic programming instead of tree
+    # TODO: dynamic programming instead of independent tree
     # https://gist.github.com/qpwo/c538c6f73727e254fdc7fab81024f6e1
     # https://github.com/pbsinclair42/MCTS/blob/master/mcts.py
     # https://github.com/int8/monte-carlo-tree-search/blob/master/mctspy/tree/search.py
     space = StateSpace(generator, start, max_extensions=INF, **kwargs)
-    # total_costs = defaultdict(float)
-    # num_visits = defaultdict(int)
-
     root = TreeNode(space.root)
     while space.is_active():
         leaves = list(filter(TreeNode.is_leaf, root.descendants()))
@@ -102,13 +125,14 @@ def mcts(start, goal, generator, _=None, debug=None, **kwargs):
             debug(vertex)
         if test_goal(vertex, goal):
             return space.solution(vertex)
-        vertex.generate_all()
-        for edge in vertex.outgoing_edges:
+        for edge in vertex.get_successors():
             new_vertex = edge.sink
-            new_vertex.generate_all()
+            if test_goal(new_vertex, goal):
+                return space.solution(new_vertex)
             node = TreeNode(new_vertex, parent_edge=edge, parent_node=leaf)
-            rollout = 0
-            #rollout = new_vertex.h_cost
+            #rollout = goal_rollout(new_vertex, goal)
+            #rollout = deadend_rollout(new_vertex, goal)
+            rollout = heuristic_rollout(new_vertex)
             for ancestor in reversed(node.ancestors() + [node]):
                 ancestor.rollouts.append(rollout) # TODO: multiple rollouts
                 if ancestor.parent_edge is not None:
