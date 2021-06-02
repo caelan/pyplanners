@@ -54,8 +54,8 @@ class TreeNode(object):
         self.vertex = vertex
         self.parent_edge = parent_edge
         self.parent_node = parent_node
-        self.rollouts = []
-        self.children = []
+        self.rollouts = [] # TODO: rename to estimates?
+        self.children = [] # TODO: map from edges to nodes
         if self.parent_node is not None:
             self.parent_node.children.append(self)
     def is_leaf(self):
@@ -67,10 +67,14 @@ class TreeNode(object):
             return INF
         return numpy.average(self.rollouts)
     def get_uct(self, c=math.sqrt(2)):
-        if self.parent_node is None:
-            return self.get_estimate()
         # https://en.wikipedia.org/wiki/Monte_Carlo_tree_search
-        return self.get_estimate() + c * math.sqrt(math.log(self.parent_node.num_rollouts()) / self.num_rollouts())
+        estimate = -self.get_estimate()
+        if (self.parent_node is None) or (c == 0):
+            return estimate
+        diverse = math.sqrt(math.log(self.parent_node.num_rollouts()) / self.num_rollouts())
+        if c == INF:
+            return diverse
+        return estimate + c*diverse
     def ancestors(self):
         if self.parent_node is None:
             return []
@@ -80,6 +84,19 @@ class TreeNode(object):
         for child in self.children:
             nodes.extend(child.descendants())
         return nodes
+    def random_leaf(self):
+        if not self.children:
+            return self
+        child = random.choice(self.children)
+        return child.random_leaf()
+    def uniform_leaf(self):
+        leaves = list(filter(TreeNode.is_leaf, self.descendants()))
+        return random.choice(leaves)
+    def uct_leaf(self, **kwargs):
+        if not self.children:
+            return self
+        best_child = max(self.children, key=lambda n: n.get_uct(**kwargs))
+        return best_child.uct_leaf()
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.vertex)
 
@@ -138,15 +155,16 @@ def mcts(start, goal, generator, _=None, debug=None, **kwargs):
     space = StateSpace(generator, start, max_extensions=INF, **kwargs)
     root = TreeNode(space.root)
     while space.is_active():
-        leaves = list(filter(TreeNode.is_leaf, root.descendants()))
-        leaf = random.choice(leaves)
+        #leaf = root.uniform_leaf()
+        #leaf = root.random_leaf()
+        leaf = root.uct_leaf()
         vertex = leaf.vertex
         space.new_iteration(vertex)
         if debug is not None:
             debug(vertex)
         if test_goal(vertex, goal):
             return space.solution(vertex)
-        for edge in vertex.get_successors():
+        for edge in vertex.get_successors(): # TODO: sample a subset
             new_vertex = edge.sink
             if test_goal(new_vertex, goal):
                 return space.solution(new_vertex)
