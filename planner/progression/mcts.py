@@ -2,41 +2,34 @@ import random
 import math
 import numpy
 
-from collections import defaultdict
 from planner.state_space import test_goal, test_parent_operator, StateSpace, Solution, Plan
 from misc.numerical import INF
 from misc.functions import randomize
-from misc.priority_queue import FIFOClassicPriorityQueue, FILOClassicPriorityQueue, FIFOPriorityQueue, FILOPriorityQueue
-
 
 def random_policy(current_vertex):
-    current_vertex.generate_all()
-    if not current_vertex.outgoing_edges:
+    edges = current_vertex.get_successors()
+    if not edges:
         return None # current_vertex
-    edge = random.choice(current_vertex.outgoing_edges)
-    return edge
+    return random.choice(edges)
 
 def greedy_policy(current_vertex, weight=1, shuffle=True):
     # TODO: function that returns the policy
     # TODO: use evaluators
-    current_vertex.generate_all()
-    edges = current_vertex.outgoing_edges
+    edges = current_vertex.get_successors()
     if not edges:
         return None
-    for edge in edges:
-        edge.sink.generate_all() # To compute h_cost
     if shuffle:
         edges = randomize(edges)
-    return min(edges, key=lambda e: e.cost + weight*e.sink.h_cost)
+    return min(edges, key=lambda e: e.cost + weight*e.sink.get_h_cost())
 
 ##################################################
 
-def random_walk(start, goal, generator, _=None, policy=greedy_policy, debug=None, **kwargs):
+def random_walk(start, goal, generator, _=None, policy=random_policy, max_steps=INF, debug=None, **kwargs):
     space = StateSpace(generator, start, max_extensions=INF, **kwargs)
     current_vertex = space.root
     edge_path = []
-    while space.is_active(): # TODO: max_length
-        current_vertex.generate_all()
+    while space.is_active() and len(edge_path) < max_steps:
+        #current_vertex.generate_all()
         space.new_iteration(current_vertex)
         if debug is not None:
             debug(current_vertex)
@@ -95,7 +88,7 @@ class TreeNode(object):
 def goal_rollout(vertex, goal):
     if test_goal(vertex, goal):
         return 0
-    return 1
+    return 1 # TODO: min action cost
 
 def deadend_rollout(vertex, goal):
     if test_goal(vertex, goal):
@@ -104,8 +97,36 @@ def deadend_rollout(vertex, goal):
         return MAX_ROLLOUT
     return 1
 
-def heuristic_rollout(vertex):
+def heuristic_rollout(vertex, goal):
     return vertex.get_h_cost()
+
+def simulation(start_vertex, goal, policy=random_policy, max_steps=5):
+    current_vertex = start_vertex
+    path = []
+    while len(path) < max_steps:
+        if test_goal(current_vertex, goal):
+            # TODO: greedy version
+            break
+        edge = policy(current_vertex)
+        if edge is None:
+            break
+        path.append(edge)
+        current_vertex = edge.sink
+    return path
+
+def simulated_rollout(vertex, goal, evaluator=deadend_rollout, **kwargs):
+    path = simulation(vertex, goal, **kwargs)
+    cost = 0
+    estimates = [cost + evaluator(vertex, goal)]
+    for edge in path:
+        cost += edge.cost
+        estimates.append(cost + evaluator(vertex, goal))
+    return estimates[-1]
+    #return numpy.average(estimates)
+
+def simulated_rollouts(vertex, goal, num=1, **kwargs):
+    assert num >= 1
+    return numpy.average([simulated_rollout(vertex, goal, **kwargs) for _ in range(num)])
 
 ##################################################
 
@@ -132,9 +153,11 @@ def mcts(start, goal, generator, _=None, debug=None, **kwargs):
             node = TreeNode(new_vertex, parent_edge=edge, parent_node=leaf)
             #rollout = goal_rollout(new_vertex, goal)
             #rollout = deadend_rollout(new_vertex, goal)
-            rollout = heuristic_rollout(new_vertex)
+            #rollout = heuristic_rollout(new_vertex, goal)
+            #rollout = simulated_rollout(new_vertex, goal)
+            rollout = simulated_rollouts(new_vertex, goal, num=3)
             for ancestor in reversed(node.ancestors() + [node]):
-                ancestor.rollouts.append(rollout) # TODO: multiple rollouts
+                ancestor.rollouts.append(rollout)
                 if ancestor.parent_edge is not None:
                     rollout += ancestor.parent_edge.cost
     return space.failure()
