@@ -123,6 +123,13 @@ class Vertex(object):
         return self.derived_state in partial_state
     def enumerated(self):
         return (self.generator is None) or (self.state_space.max_generations <= self.generations)
+    def get_h_cost(self):
+        if self.h_cost is None:
+            self.generate_all()
+        return self.h_cost
+    def get_successors(self):
+        self.generate_all()
+        return self.outgoing_edges
     def is_dead_end(self):
         # assumes the heuristic is safe
         assert self.h_cost is not None # TODO: call h_cost if haven't done so far
@@ -198,7 +205,7 @@ class Edge(object):
     @property
     def priority(self):
         return Priority(self.path_cost, self.path_length)
-    def is_parent(self):
+    def is_parent(self): # TODO: what was the purpose of this?
         return self.sink.parent_edge == self
     # def delete(self):
     #     safe_remove(self.source.outgoing_edges, self)

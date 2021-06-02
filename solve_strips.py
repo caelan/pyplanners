@@ -38,7 +38,7 @@ def solve_strips(problem, print_profile=False, **kwargs):
     #print('Wrote', directory+'profile')
     print(SEPARATOR)
 
-    data = (str(plan) if plan is not None else 'Infeasible') + '\n\n' + str(state_space)
+    data = (str(plan) if (plan is not None) else 'Unable to find a plan') + '\n\n' + str(state_space)
     print(data)
     #write(directory + 'planner_statistics', data)
     #print('Wrote', directory+'planner_statistics')

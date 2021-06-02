@@ -60,7 +60,7 @@ def line_stack_blocks(n=10, height=5):
 
     return STRIPSProblem(initial, goal, operators)
 
-def restack_blocks(n=4, height=4):
+def restack_blocks(n=5, height=5):
     height = max(height, 0)
     n = max(height, n)
     blocks = ['Block{}'.format(i) for i in range(1, n+1)]
