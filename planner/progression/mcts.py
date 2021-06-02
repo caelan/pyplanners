@@ -60,6 +60,8 @@ class TreeNode(object):
             self.parent_node.children.append(self)
     def is_leaf(self):
         return not bool(self.children)
+    # def is_explored(self):
+    #     return set(self.vertex.get_successors()) == {child.vertex for child in self.children}
     def num_rollouts(self):
         return len(self.rollouts)
     def get_estimate(self):
@@ -85,7 +87,7 @@ class TreeNode(object):
             nodes.extend(child.descendants())
         return nodes
     def random_leaf(self):
-        if not self.children:
+        if self.is_leaf(): # is_leaf | is_explored
             return self
         child = random.choice(self.children)
         return child.random_leaf()
@@ -93,7 +95,7 @@ class TreeNode(object):
         leaves = list(filter(TreeNode.is_leaf, self.descendants()))
         return random.choice(leaves)
     def uct_leaf(self, **kwargs):
-        if not self.children:
+        if self.is_leaf(): # is_leaf | is_explored
             return self
         best_child = max(self.children, key=lambda n: n.get_uct(**kwargs))
         return best_child.uct_leaf()
